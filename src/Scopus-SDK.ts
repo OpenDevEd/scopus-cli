@@ -1,5 +1,6 @@
 import { AxiosResponse } from 'axios';
 import GET from './utils/GET';
+import { ScopusSearchResponse } from './types/ScopusSearchResponse';
 
 export default class ScopusSDK {
   private apiKey: string;
@@ -19,7 +20,7 @@ export default class ScopusSDK {
   async search(
     query: string,
     view: 'STANDARD' | 'COMPLETE' = 'STANDARD',
-  ): Promise<AxiosResponse> {
+  ): Promise<AxiosResponse<ScopusSearchResponse>> {
     try {
       const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+').replace(/\(/g, '%28').replace(/\)/g, '%29');
       console.log(encodedQuery);
