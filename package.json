@@ -18,5 +18,10 @@
     "eslint-plugin-import": "^2.29.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@types/yargs": "^17.0.32",
+    "axios": "^1.6.8",
+    "yargs": "^17.7.2"
   }
 }
