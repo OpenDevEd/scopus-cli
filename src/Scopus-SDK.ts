@@ -21,7 +21,9 @@ export default class ScopusSDK {
     view: 'STANDARD' | 'COMPLETE' = 'STANDARD',
   ): Promise<AxiosResponse> {
     try {
-      const response = await GET(`${this.baseUrl}/search/scopus`, this.headers, { query, view });
+      const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+').replace(/\(/g, '%28').replace(/\)/g, '%29');
+      console.log(encodedQuery);
+      const response = await GET(`${this.baseUrl}/search/scopus`, this.headers, { query: encodedQuery, view });
       return response;
     } catch (error) {
       throw new Error(`GET request failed: ${error.message}`);
