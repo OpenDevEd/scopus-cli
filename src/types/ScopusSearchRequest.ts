@@ -53,8 +53,7 @@ export interface ScopusSearchRequest {
   subj?: Subj | Subj[];
   alias?: 'true' | 'false';
   cursor?: string;
-  // facets=authname(count=20,sort=na,prefix=Ma);exactsrctitle(prefix=J);subjarea(sort=fd);pubyear;srctype(sort=fdna)
-  facets?: Facet[];
+  facets?: Facet | Facet[];
 }
 
 type Field = 'prism:url'
@@ -105,6 +104,13 @@ type Sorting = {
   order: 'asc' | 'desc';
 };
 
-type Facet = ('af-id' | 'aucite' | 'au-id' | 'authname' | 'country' | 'exactsrctitle' | 'fund-sponsor' | 'language' | 'openaccess' | 'pubyear' | 'restype' | 'srctype' | 'subjarea');
+type FacetOption = ('af-id' | 'aucite' | 'au-id' | 'authname' | 'country' | 'exactsrctitle' | 'fund-sponsor' | 'language' | 'openaccess' | 'pubyear' | 'restype' | 'srctype' | 'subjarea');
 
 type Subj = 'AGRI' | 'ARTS' | 'BIOC' | 'BUSI' | 'CENG' | 'CHEM' | 'COMP' | 'DECI' | 'DENT' | 'EART' | 'ECON' | 'ENER' | 'ENGI' | 'ENVI' | 'HEAL' | 'IMMU' | 'MATE' | 'MATH' | 'MEDI' | 'NEUR' | 'NURS' | 'PHAR' | 'PHYS' | 'PSYC' | 'SOCI' | 'VETE' | 'MULT';
+
+type Facet = {
+  option: FacetOption;
+  count?: number;
+  sort?: 'na' | 'fd' | 'fdna';
+  prefix?: string;
+};
