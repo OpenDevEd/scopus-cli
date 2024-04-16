@@ -53,6 +53,28 @@ export interface ScopusSearchRequest {
   subj?: Subj | Subj[];
   alias?: 'true' | 'false';
   cursor?: string;
+  /**
+   * Represents the facets associated with the search.
+   * @option af-id - Affiliation ID
+   * @option aucite - Author citation
+   * @option au-id - Author ID
+   * @option authname - Author name and author ID
+   * @option country - Country
+   * @option exactsrctitle - Source title
+   * @option fund-sponsor - Funding sponsor
+   * @option language - Language
+   * @option openaccess - Open access status
+   * @option pubyear - Publication year
+   * @option restype - Internal collection
+   * @option srctype - Content category
+   * @option subjarea - Subject area
+   *
+   * @example facets=[{"option":"authname","count":20,"sort":"na","prefix":"Ma"},
+   *  {"option":"exactsrctitle","prefix":"J"},
+   *  {"option":"subjarea","sort":"fdna"},
+   *  {"option":"pubyear"},
+   *  {"option":"openaccess","sort":"fdna"}]
+   */
   facets?: Facet | Facet[];
 }
 
