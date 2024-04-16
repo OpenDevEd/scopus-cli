@@ -97,7 +97,7 @@ type Field = 'prism:url'
 | 'article-number'
 | 'fund-acr'
 | 'fund-no'
-| 'fund-sponsor'
+| 'fund-sponsor';
 
 type Sorting = {
   field: 'artnum' | 'citedby-count' | 'coverDate' | 'creator' | 'orig-load-date' | 'pagecount' | 'pagefirst' | 'pageRange' | 'publicationName' | 'pubyear' | 'relevancy' | 'volume';
