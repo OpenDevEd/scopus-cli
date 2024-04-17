@@ -1,4 +1,5 @@
 import { AxiosResponse } from 'axios';
+import fs from 'fs';
 import GET from './utils/GET';
 import { ScopusSearchResponse } from './types/ScopusSearchResponse';
 import { ScopusSearchRequest } from './types/ScopusSearchRequest';
@@ -33,6 +34,7 @@ export default class ScopusSDK {
       alias = true,
       cursor,
       facets,
+      toJson,
     }: ScopusSearchRequest,
   ): Promise<AxiosResponse<ScopusSearchResponse>> {
     try {
@@ -118,6 +120,11 @@ export default class ScopusSDK {
           facets: facetsString,
         },
       );
+      if (toJson) {
+        if (response.status === 200) {
+          fs.writeFileSync(`${toJson}.json`, JSON.stringify(response.data, null, 2));
+        }
+      }
       return response;
     } catch (error) {
       throw new Error(`GET request failed: ${error.message}`);

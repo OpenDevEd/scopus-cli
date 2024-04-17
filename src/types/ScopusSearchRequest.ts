@@ -76,6 +76,7 @@ export interface ScopusSearchRequest {
    *  {"option":"openaccess","sort":"fdna"}]
    */
   facets?: Facet | Facet[];
+  toJson?: string;
 }
 
 type Field = 'prism:url'
