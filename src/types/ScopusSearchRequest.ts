@@ -51,7 +51,7 @@ export interface ScopusSearchRequest {
    * @value MULT - Multidisciplinary
    */
   subj?: Subj | Subj[];
-  alias?: 'true' | 'false';
+  alias?: boolean;
   cursor?: string;
   /**
    * Represents the facets associated with the search.
@@ -100,20 +100,22 @@ type Field = 'prism:url'
 | 'orcid'
 | 'dc:creator'
 | 'openaccess:openaccessFlag'
-| 'affiliation:affilname'
-| 'affiliation:affiliation-city'
-| 'affiliation:affiliation-country'
-| 'affiliation:afid'
-| 'affiliation:affiliation-url'
-| 'affiliation:name-variant'
-| 'author:author-url'
-| 'author:authid'
-| 'author:orcid'
-| 'author:authname'
-| 'author:given-name'
-| 'author:surname'
-| 'author:initials'
-| 'author:afid'
+| 'affiliation'
+| 'affiliation.affilname'
+| 'affiliation.affiliation-city'
+| 'affiliation.affiliation-country'
+| 'affiliation.afid'
+| 'affiliation.affiliation-url'
+| 'affiliation.name-variant'
+| 'author'
+| 'author.author-url'
+| 'author.authid'
+| 'author.orcid'
+| 'author.authname'
+| 'author.given-name'
+| 'author.surname'
+| 'author.initials'
+| 'author.afid'
 | 'dc:description'
 | 'authkeywords'
 | 'article-number'
@@ -123,7 +125,7 @@ type Field = 'prism:url'
 
 type Sorting = {
   field: 'artnum' | 'citedby-count' | 'coverDate' | 'creator' | 'orig-load-date' | 'pagecount' | 'pagefirst' | 'pageRange' | 'publicationName' | 'pubyear' | 'relevancy' | 'volume';
-  order: 'asc' | 'desc';
+  order?: 'asc' | 'desc';
 };
 
 type FacetOption = ('af-id' | 'aucite' | 'au-id' | 'authname' | 'country' | 'exactsrctitle' | 'fund-sponsor' | 'language' | 'openaccess' | 'pubyear' | 'restype' | 'srctype' | 'subjarea');
