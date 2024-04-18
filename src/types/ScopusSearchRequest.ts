@@ -79,7 +79,7 @@ export interface ScopusSearchRequest {
   toJson?: string;
 }
 
-type Field = 'prism:url'
+export type Field = 'prism:url'
 | 'dc:identifier'
 | 'eid'
 | 'dc:title'
@@ -124,16 +124,16 @@ type Field = 'prism:url'
 | 'fund-no'
 | 'fund-sponsor';
 
-type Sorting = {
+export type Sorting = {
   field: 'artnum' | 'citedby-count' | 'coverDate' | 'creator' | 'orig-load-date' | 'pagecount' | 'pagefirst' | 'pageRange' | 'publicationName' | 'pubyear' | 'relevancy' | 'volume';
   order?: 'asc' | 'desc';
 };
 
-type FacetOption = ('af-id' | 'aucite' | 'au-id' | 'authname' | 'country' | 'exactsrctitle' | 'fund-sponsor' | 'language' | 'openaccess' | 'pubyear' | 'restype' | 'srctype' | 'subjarea');
+export type FacetOption = ('af-id' | 'aucite' | 'au-id' | 'authname' | 'country' | 'exactsrctitle' | 'fund-sponsor' | 'language' | 'openaccess' | 'pubyear' | 'restype' | 'srctype' | 'subjarea');
 
-type Subj = 'AGRI' | 'ARTS' | 'BIOC' | 'BUSI' | 'CENG' | 'CHEM' | 'COMP' | 'DECI' | 'DENT' | 'EART' | 'ECON' | 'ENER' | 'ENGI' | 'ENVI' | 'HEAL' | 'IMMU' | 'MATE' | 'MATH' | 'MEDI' | 'NEUR' | 'NURS' | 'PHAR' | 'PHYS' | 'PSYC' | 'SOCI' | 'VETE' | 'MULT';
+export type Subj = 'AGRI' | 'ARTS' | 'BIOC' | 'BUSI' | 'CENG' | 'CHEM' | 'COMP' | 'DECI' | 'DENT' | 'EART' | 'ECON' | 'ENER' | 'ENGI' | 'ENVI' | 'HEAL' | 'IMMU' | 'MATE' | 'MATH' | 'MEDI' | 'NEUR' | 'NURS' | 'PHAR' | 'PHYS' | 'PSYC' | 'SOCI' | 'VETE' | 'MULT';
 
-type Facet = {
+export type Facet = {
   option: FacetOption;
   count?: number;
   sort?: 'na' | 'fd' | 'fdna';
