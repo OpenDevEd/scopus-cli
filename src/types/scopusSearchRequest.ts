@@ -77,6 +77,7 @@ export interface ScopusSearchRequest {
    */
   facets?: Facet | Facet[];
   toJson?: string;
+  retriveAllPages?: boolean;
 }
 
 export type Field = 'prism:url'

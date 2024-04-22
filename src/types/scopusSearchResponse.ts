@@ -21,7 +21,7 @@ interface OpenSearchQuery {
 }
 
 // Link Interface
-interface Link {
+export interface Link {
   '@_fa': string;
   '@ref': string;
   '@href': string;

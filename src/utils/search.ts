@@ -1,6 +1,8 @@
 import {
   Facet, Field, Sorting, Subj,
 } from '../types/scopusSearchRequest';
+import { Link, ScopusSearchResponse } from '../types/scopusSearchResponse';
+import GET from './get';
 
 export function parseField(field: Field | Field[]) {
   let fieldString = '';
@@ -73,4 +75,50 @@ export function parseFacets(facets: Facet | Facet[]) {
     }
   }
   return facetsString;
+}
+
+export function validateParameters(
+  count?: number,
+) {
+  if (count > 25) {
+    throw new Error('The maximum number of results per page is 25');
+  }
+}
+
+export function parseCountAndStart(
+  count: number,
+  start: number,
+  retriveAllPages: boolean,
+) {
+  let searchCount = count;
+  let searchStart = start;
+  if (retriveAllPages) {
+    searchCount = 25;
+    searchStart = 0;
+  }
+  validateParameters(searchCount);
+  return { searchCount, searchStart };
+}
+
+function getNext(links: Link[]) {
+  return links.find((l) => l['@ref'] === 'next');
+}
+
+export async function handleAllPages(
+  data: ScopusSearchResponse,
+  headers: Record<string, string>,
+): Promise<ScopusSearchResponse> {
+  const links = data['search-results'].link;
+  let next = getNext(links);
+  const allData = data;
+  let page = 1;
+  while (next) {
+    console.log(`Retrieving page ${page}`);
+    page += 1;
+    const nextData = await GET(next['@href'], headers, {});
+    allData['search-results'].entry.push(...nextData.data['search-results'].entry);
+    next = getNext(nextData.data['search-results'].link);
+  }
+
+  return allData;
 }

@@ -4,6 +4,8 @@ import GET from './utils/get';
 import { ScopusSearchResponse } from './types/scopusSearchResponse';
 import { ScopusSearchRequest } from './types/scopusSearchRequest';
 import {
+  handleAllPages,
+  parseCountAndStart,
   parseFacets, parseField, parseSort, parseSubj,
 } from './utils/search';
 
@@ -38,6 +40,7 @@ export default class ScopusSDK {
       cursor,
       facets,
       toJson,
+      retriveAllPages,
     }: ScopusSearchRequest,
   ): Promise<AxiosResponse<ScopusSearchResponse>> {
     try {
@@ -53,6 +56,8 @@ export default class ScopusSDK {
 
       const facetsString = parseFacets(facets);
 
+      const { searchStart, searchCount } = parseCountAndStart(count, start, retriveAllPages);
+
       // Make GET request to Scopus API
       const response = await GET(
         `${this.baseUrl}/search/scopus`,
@@ -63,8 +68,8 @@ export default class ScopusSDK {
           field: fieldString,
           suppressNavLinks: suppressNavLinks.toString(),
           date,
-          start: start?.toString(),
-          count: count?.toString(),
+          start: searchStart?.toString(),
+          count: searchCount?.toString(),
           sort: sortString,
           content,
           subj: subjString,
@@ -73,7 +78,9 @@ export default class ScopusSDK {
           facets: facetsString,
         },
       );
-
+      if (retriveAllPages) {
+        response.data = await handleAllPages(response.data, this.headers);
+      }
       // Write response to JSON file if toJson is provided
       if (toJson) {
         if (response.status === 200) {
