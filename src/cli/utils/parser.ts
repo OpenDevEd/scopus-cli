@@ -7,8 +7,14 @@ function getKey() {
   return key.trim();
 }
 
-export default async function search(args: any) {
+async function saveAndSearch(scopusOptions: ScopusSearchRequest) {
+  fs.writeFileSync('scopusOptions.json', JSON.stringify(scopusOptions, null, 2));
   const scopusSDK = new ScopusSDK(getKey());
+  const res = await scopusSDK.search(scopusOptions);
+  return res;
+}
+
+export default async function search(args: any) {
   const scopusOptions: ScopusSearchRequest = {
     query: args.searchQuery.join(' '),
   };
@@ -18,6 +24,6 @@ export default async function search(args: any) {
 
   scopusOptions.retriveAllPages = !!args.allpages;
 
-  const res = await scopusSDK.search(scopusOptions);
+  const res = await saveAndSearch(scopusOptions);
   console.log(res);
 }
