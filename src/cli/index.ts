@@ -37,7 +37,7 @@ yargs(hideBin(process.argv))
       console.error('Search query is required');
       process.exit(1);
     }
-    if (!argv.searchstring && !argv.searchstringfromfile) {
+    if (!argv.searchQuery && !argv.searchstringfromfile) {
       console.log('Please provide a search string (positional args) or use --searchstringfromfile=file.txt.');
       process.exit(1);
     }
