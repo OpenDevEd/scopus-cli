@@ -20,11 +20,6 @@ yargs(hideBin(process.argv))
         .option('view', {
           describe: 'This alias represents the list of elements that will be returned in the response.',
           choices: ['STANDARD', 'COMPLETE'],
-        })
-        .option('fields', {
-          describe: 'This represents the list of fields to be returned in the response.',
-          choices: ['dc:identifier', 'eid', 'dc:title', 'dc:creator', 'prism:publicationName'],
-          type: 'array',
         });
     },
   )
