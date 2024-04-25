@@ -3,3 +3,5 @@ node_modules/
 response.json
 *.json
 *.txt
+
+dist/
