@@ -1,8 +1,14 @@
+import fs from 'fs';
 import {
   Facet, Field, Sorting, Subj,
 } from '../types/scopusSearchRequest';
 import { Link, ScopusSearchResponse } from '../types/scopusSearchResponse';
 import GET from './get';
+
+export function urlEncodeQuery(query: string) {
+  const encode = encodeURIComponent(query).replace(/%20/g, '+').replace(/\(/g, '%28').replace(/\)/g, '%29');
+  return encode;
+}
 
 export function parseField(field: Field | Field[]) {
   let fieldString = '';
@@ -78,11 +84,22 @@ export function parseFacets(facets: Facet | Facet[]) {
 }
 
 export function validateParameters(
-  count?: number,
+  retrieveAllPages?: boolean,
+  startPage?: number,
+  endPage?: number,
+  chunkSize?: number,
+  toJson?: string,
+  perPage?: number,
 ) {
-  if (count > 25) {
-    throw new Error('The maximum number of results per page is 25');
+  if (retrieveAllPages && (startPage || endPage)) {
+    throw new Error('startPage and endPage are not allowed with retrieveAllPages');
   }
+
+  if (chunkSize && (startPage || endPage)) throw new Error('startPage and endPage are not allowed with chunkSize');
+  if (chunkSize && !toJson) throw new Error('toJson is required with chunkSize');
+
+  // TODO: Remove this validation when the Scopus API is fixed
+  if (perPage && perPage > 25) throw new Error('perPage must be less than or equal to 25');
 }
 
 export function parseCountAndStart(
@@ -96,7 +113,6 @@ export function parseCountAndStart(
     searchCount = 25;
     searchStart = 0;
   }
-  validateParameters(searchCount);
   return { searchCount, searchStart };
 }
 
