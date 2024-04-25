@@ -5,8 +5,10 @@ import { ScopusSearchResponse } from './types/scopusSearchResponse';
 import { ScopusSearchRequest } from './types/scopusSearchRequest';
 import {
   handleAllPages,
-  parseCountAndStart,
-  parseFacets, parseField, parseSort, parseSubj,
+  handleAllPagesInChunks,
+  handleMultiplePages,
+  urlEncodeQuery,
+  validateParameters,
 } from './utils/search';
 
 export default class ScopusSDK {
@@ -28,35 +30,28 @@ export default class ScopusSDK {
     {
       query,
       view = 'STANDARD',
-      field,
-      suppressNavLinks = false,
-      date,
-      start,
-      count,
-      sort,
-      content = 'all',
-      subj,
-      alias = true,
-      cursor,
-      facets,
       toJson,
-      retriveAllPages,
+      retriveAllPages = false,
+      perPage = 25,
+      page = 1,
+      startPage,
+      endPage,
+      chunkSize,
     }: ScopusSearchRequest,
   ): Promise<AxiosResponse<ScopusSearchResponse>> {
     try {
       // Encode query string and replace spaces with '+'
       // and parentheses with their respective encoded values
-      const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+').replace(/\(/g, '%28').replace(/\)/g, '%29');
+      const encodedQuery = urlEncodeQuery(query);
+      validateParameters(retriveAllPages, startPage, endPage, chunkSize, toJson, perPage);
+      if (retriveAllPages) {
+        perPage = 25;
+        page = 1;
+      }
 
-      const fieldString = parseField(field);
-
-      const sortString = parseSort(sort);
-
-      const subjString = parseSubj(subj);
-
-      const facetsString = parseFacets(facets);
-
-      const { searchStart, searchCount } = parseCountAndStart(count, start, retriveAllPages);
+      if (startPage && endPage) {
+        page = startPage;
+      }
 
       // Make GET request to Scopus API
       const response = await GET(
@@ -65,24 +60,26 @@ export default class ScopusSDK {
         {
           query: encodedQuery,
           view,
-          field: fieldString,
-          suppressNavLinks: suppressNavLinks.toString(),
-          date,
-          start: searchStart?.toString(),
-          count: searchCount?.toString(),
-          sort: sortString,
-          content,
-          subj: subjString,
-          alias: alias.toString(),
-          cursor,
-          facets: facetsString,
+          start: ((page * perPage) - perPage).toString(),
+          count: perPage?.toString(),
         },
       );
       if (retriveAllPages) {
+        if (chunkSize) {
+          response.data = await handleAllPagesInChunks(
+            response.data,
+            this.headers,
+            chunkSize,
+            toJson,
+          );
+        }
         response.data = await handleAllPages(response.data, this.headers);
       }
+      if (startPage && endPage) {
+        response.data = await handleMultiplePages(response.data, this.headers, startPage, endPage);
+      }
       // Write response to JSON file if toJson is provided
-      if (toJson) {
+      if (toJson && !chunkSize) {
         if (response.status === 200) {
           fs.writeFileSync(`${toJson}.json`, JSON.stringify(response.data, null, 2));
         }

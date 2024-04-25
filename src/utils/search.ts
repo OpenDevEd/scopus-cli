@@ -120,6 +120,26 @@ function getNext(links: Link[]) {
   return links.find((l) => l['@ref'] === 'next');
 }
 
+export async function handleMultiplePages(
+  data: ScopusSearchResponse,
+  headers: Record<string, string>,
+  start: number,
+  end: number,
+): Promise<ScopusSearchResponse> {
+  const links = data['search-results'].link;
+  let next = getNext(links);
+  const allData = data;
+  let page = start + 1;
+  while (next && page < end) {
+    console.log(`Retrieving page ${page}`);
+    page += 1;
+    const nextData = await GET(next['@href'], headers, {});
+    allData['search-results'].entry.push(...nextData.data['search-results'].entry);
+    next = getNext(nextData.data['search-results'].link);
+  }
+  return allData;
+}
+
 export async function handleAllPages(
   data: ScopusSearchResponse,
   headers: Record<string, string>,
@@ -137,4 +157,49 @@ export async function handleAllPages(
   }
 
   return allData;
+}
+
+export function formatNumber(num: number): string {
+  // Pad the number to 7 digits
+  const paddedNum = num.toString().padStart(7, '0');
+
+  // Format the padded number with commas as thousands separators
+  const parts = paddedNum.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  return parts.join('.');
+}
+
+export async function handleAllPagesInChunks(
+  data: ScopusSearchResponse,
+  headers: Record<string, string>,
+  chunkSize: number,
+  toJson: string,
+): Promise<ScopusSearchResponse> {
+  const links = data['search-results'].link;
+  let next = getNext(links);
+  const chunk = data;
+  let page = 1;
+  let start = 0;
+  let end;
+  while (next) {
+    console.log(`Retrieving page ${page}`);
+    page += 1;
+    const nextData = await GET(next['@href'], headers, {});
+    chunk['search-results'].entry.push(...nextData.data['search-results'].entry);
+    next = getNext(nextData.data['search-results'].link);
+    if (chunk['search-results'].entry.length >= chunkSize || !next) {
+      end = start + chunk['search-results'].entry.length;
+      const startFormatted = formatNumber(start + 1);
+      const endFormatted = formatNumber(end);
+      fs.writeFileSync(
+        `${toJson}-${startFormatted}-${endFormatted}.json`,
+        JSON.stringify(chunk, null, 2),
+      );
+      start = end;
+      chunk['search-results'].entry = [];
+    }
+  }
+
+  return data;
 }

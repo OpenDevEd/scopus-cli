@@ -78,6 +78,11 @@ export interface ScopusSearchRequest {
   facets?: Facet | Facet[];
   toJson?: string;
   retriveAllPages?: boolean;
+  chunkSize?: number;
+  startPage?: number;
+  endPage?: number;
+  perPage?: number;
+  page?: number;
 }
 
 export type Field = 'prism:url'
