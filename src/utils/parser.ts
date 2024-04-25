@@ -1,6 +1,6 @@
 import fs from 'fs';
-import ScopusSDK from '../../scopusSDK';
-import { ScopusSearchRequest } from '../../types/scopusSearchRequest';
+import ScopusSDK from '../sdk/scopusSDK';
+import { ScopusSearchRequest } from '../sdk/types/scopusSearchRequest';
 
 function getKey() {
   const key = fs.readFileSync('scopus-api-key.txt', 'utf8');
