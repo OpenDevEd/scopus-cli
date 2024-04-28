@@ -21,7 +21,7 @@ If you do not use `npm link`, you need to use `npm run start --` instead of `sco
 
 # Configuration
 
-
+When running the `scopus-cli` command for the first time, you will be prompted to enter your Scopus API key. This key will be stored in a file named `.config/scopus-cli/scopus-api-key.txt` in your home directory.
 
 # Usage
 
