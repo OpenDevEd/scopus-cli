@@ -7,5 +7,5 @@ scopus-cli --help
 
 
 # Also see
-
-https://github.com/ElsevierDev (python)
+* https://dev.elsevier.com/
+* https://github.com/ElsevierDev (python)
