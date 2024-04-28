@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { ScopusSearchResponse } from '../types/scopusSearchResponse';
 
 async function GET(
@@ -13,7 +13,8 @@ async function GET(
     });
     return response;
   } catch (error) {
-    throw new Error(`GET request failed: ${error.message}`);
+    console.error(`GET request failed: ${error.message}`);
+    throw error;
   }
 }
 

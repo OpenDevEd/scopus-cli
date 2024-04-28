@@ -1,9 +1,25 @@
 import fs from 'fs';
+import os from 'os';
+import readlineSync from 'readline-sync';
+import path from 'path';
 import ScopusSDK from '../sdk/scopusSDK';
 import { ScopusSearchRequest } from '../sdk/types/scopusSearchRequest';
 
 function getKey() {
-  const key = fs.readFileSync('scopus-api-key.txt', 'utf8');
+  const keyFile = `${os.homedir()}/.config/scopus-cli/scopus-api-key.txt`;
+
+  if (!fs.existsSync(keyFile)) {
+    const key = readlineSync.question('Enter your Scopus API key: ');
+
+    // Create parent directories if they do not exist
+    const keyDir = path.dirname(keyFile);
+    fs.mkdirSync(keyDir, { recursive: true });
+
+    fs.writeFileSync(keyFile, key);
+    return key.trim();
+  }
+
+  const key = fs.readFileSync(keyFile, 'utf8');
   return key.trim();
 }
 

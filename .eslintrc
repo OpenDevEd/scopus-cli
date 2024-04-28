@@ -9,6 +9,7 @@
   "rules": {
     "no-console": "off",
     "no-await-in-loop": "off",
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "eslint-plugin-import/prefer-default-export": "off"
   }
 }
