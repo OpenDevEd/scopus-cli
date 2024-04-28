@@ -23,6 +23,13 @@ function getKey() {
   return key.trim();
 }
 
+function setKey(key: string) {
+  const keyFile = `${os.homedir()}/.config/scopus-cli/scopus-api-key.txt`;
+  const keyDir = path.dirname(keyFile);
+  fs.mkdirSync(keyDir, { recursive: true });
+  fs.writeFileSync(keyFile, key);
+}
+
 function sanitise(str: string) {
   let term = str;
   term = term.replace(/\t+/gs, ' ');
@@ -113,6 +120,9 @@ async function handleCount(scopusOptions: ScopusSearchRequest) {
 }
 
 export default async function search(args: any) {
+  if (args.apiKey) {
+    setKey(args.apiKey);
+  }
   let query = args.searchQuery;
   if (args.searchstringfromfile) {
     if (!fs.existsSync(args.searchstringfromfile)) {

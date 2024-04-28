@@ -55,6 +55,14 @@ yargs(hideBin(process.argv))
         .option('autosave', {
           describe: 'Save the search results to a json file with the search string as the filename',
           type: 'boolean',
+        })
+        .option('apiKey', {
+          describe: 'API key',
+          type: 'string',
+        })
+        .option('keyCapabilities', {
+          describe: 'Key capabilities',
+          type: 'string',
         });
     },
   )
