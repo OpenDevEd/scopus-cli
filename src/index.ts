@@ -62,7 +62,7 @@ yargs(hideBin(process.argv))
         })
         .option('keyCapabilities', {
           describe: 'Key capabilities',
-          type: 'string',
+          type: 'boolean',
         });
     },
   )

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { AxiosError } from 'axios';
 import {
   Facet, Field, Sorting, Subj,
 } from '../types/scopusSearchRequest';
@@ -202,4 +203,15 @@ export async function handleAllPagesInChunks(
   }
 
   return data;
+}
+
+export async function testApi(apiKey: string) {
+  try {
+    await GET('https://api.elsevier.com/content/search/scopus', {
+      'X-ELS-APIKey': apiKey,
+    }, {});
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error(err.response?.data);
+  }
 }

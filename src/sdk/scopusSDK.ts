@@ -10,6 +10,7 @@ import {
   urlEncodeQuery,
   validateParameters,
 } from './utils/search';
+import { quotaExceededError } from './utils/utility';
 
 export default class ScopusSDK {
   private apiKey: string;
@@ -24,6 +25,143 @@ export default class ScopusSDK {
     this.headers = {
       'X-ELS-APIKey': this.apiKey,
     };
+  }
+
+  async testKey(query: string) {
+    const encodedQuery = urlEncodeQuery(query);
+    try {
+      console.log('----Testing API key----');
+      const res = await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+      });
+      console.log('Limit number of queries', res.headers['x-ratelimit-limit']);
+      console.log('API key is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status === 401) {
+        console.error('Invalid API key');
+      }
+      return;
+    }
+
+    // test view COMPLETE
+    try {
+      console.log('----Testing COMPLETE view----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        view: 'COMPLETE',
+      });
+      console.log('COMPLETE view is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('COMPLETE view is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
+
+    // test cursor
+    try {
+      console.log('----Testing cursor----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        cursor: '*',
+      });
+      console.log('Cursor is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('Cursor is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
+
+    // test count 1
+    try {
+      console.log('----Testing count 1----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        count: '1',
+      });
+      console.log('Count 1 is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('Count 1 is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
+
+    // test count 25
+    try {
+      console.log('----Testing count 25----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        count: '25',
+      });
+      console.log('Count 25 is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('Count 25 is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
+
+    // test count 50
+    try {
+      console.log('----Testing count 50----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        count: '50',
+      });
+      console.log('Count 50 is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('Count 50 is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
+
+    // test count 100
+    try {
+      console.log('----Testing count 100----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        count: '100',
+      });
+      console.log('Count 100 is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('Count 100 is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
+
+    // test count 200
+    try {
+      console.log('----Testing count 200----');
+      await GET(`${this.baseUrl}/search/scopus`, this.headers, {
+        query: encodedQuery,
+        count: '200',
+      });
+      console.log('Count 200 is valid');
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status !== 429) {
+        console.error('Count 200 is invalid');
+      } else if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+    }
   }
 
   async search({
@@ -110,17 +248,7 @@ export default class ScopusSDK {
     } catch (error) {
       const err = error as AxiosError;
       if (err.response?.status === 429) {
-        const { headers } = err.response;
-        const errorStatus = headers['X-ELS-Status'];
-        const resetTime = headers['X-RateLimit-Reset'];
-        const resetTimestamp = parseInt(resetTime, 10);
-        const resetDate = new Date(resetTimestamp * 1000);
-
-        if (errorStatus === 'QUOTA_EXCEEDED') {
-          throw new Error(
-            `Quota exceeded. Please try again after ${resetDate.toLocaleTimeString()}`,
-          );
-        }
+        quotaExceededError(err);
       }
       throw new Error(`GET request failed: ${error.message}`);
     }
