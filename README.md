@@ -37,6 +37,18 @@ Search for matches only in the title:
 scopus-cli search --title  climate AND africa AND education
 ```
 
+Search for matches only in the title and abstract
+
+```
+scopus-cli search --titleabs  climate AND africa AND education
+```
+
+Search Scopus using scopus query language:
+
+```
+scopus-cli search --query  TITLE-ABS-KEY(climate AND africa AND education)
+```
+
 Search scopus and display number of results:
 
 ```
@@ -61,3 +73,16 @@ Expand search terms according to searches stored in text files in `searchterms/`
 ```
 scopus-cli search --title  climate... AND africa... AND education... --showtitle
 ```
+
+Add new api key:
+
+```
+scopus-cli search --title  climate AND africa AND education --apiKey <API_KEY>
+```
+
+Test Key capabilities:
+
+```
+scopus-cli search --title  climate AND africa AND education --keyCapabilities
+```
+
