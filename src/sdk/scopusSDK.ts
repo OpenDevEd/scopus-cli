@@ -68,16 +68,15 @@ export default class ScopusSDK {
       // };
 
       // Make GET request to Scopus API
+      const url = `${this.baseUrl}/search/scopus?query=${encodedQuery}&view=${view}&start=${(
+        page * perPage - perPage
+      ).toString()}&count=${perPage?.toString()}`;
       const response = await GET(
-        `${this.baseUrl}/search/scopus`,
+        url,
         this.headers,
-        {
-          query: encodedQuery,
-          view,
-          start: (page * perPage - perPage).toString(),
-          count: perPage?.toString(),
-        },
+        {},
       );
+      console.log('response:', response);
 
       if (retriveAllPages) {
         if (chunkSize) {
