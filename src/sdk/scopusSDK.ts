@@ -76,7 +76,7 @@ export default class ScopusSDK {
         this.headers,
         {},
       );
-      console.log('response:', response);
+      // console.log('response:', response);
 
       if (retriveAllPages) {
         if (chunkSize) {
