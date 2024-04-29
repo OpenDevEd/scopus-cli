@@ -60,7 +60,7 @@ yargs(hideBin(process.argv))
           describe: 'API key',
           type: 'string',
         })
-        .option('keyCapabilities', {
+        .option('keyinfo', {
           describe: 'Key capabilities',
           type: 'boolean',
         });

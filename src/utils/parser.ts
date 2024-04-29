@@ -139,7 +139,7 @@ export default async function search(args: any) {
     const res = await handleCount(scopusOptions);
     return res;
   }
-  if (args.keyCapabilities) {
+  if (args.keyinfo) {
     const scopusSDK = new ScopusSDK(getKey());
     await scopusSDK.testKey(scopusOptions.query);
     return undefined;

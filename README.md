@@ -83,6 +83,6 @@ scopus-cli search --title  climate AND africa AND education --apiKey <API_KEY>
 Test Key capabilities:
 
 ```
-scopus-cli search --title  climate AND africa AND education --keyCapabilities
+scopus-cli search --title  climate AND africa AND education --keyinfo
 ```
 
