@@ -21,7 +21,7 @@ yargs(hideBin(process.argv))
           describe: 'Search only in title',
           type: 'boolean',
         })
-        .option('titleabs', {
+        .option('title-abs', {
           describe: 'Search only in title and abstract',
           type: 'boolean',
         })
@@ -75,7 +75,7 @@ yargs(hideBin(process.argv))
       console.log('Please provide a search string (positional args) or use --searchstringfromfile=file.txt.');
       process.exit(1);
     }
-    if (argv.title && argv.titleabs) {
+    if (argv.title && argv.titleAbs) {
       console.log('Please provide only one search field --title or --title_and_abstract.');
       process.exit(1);
     }

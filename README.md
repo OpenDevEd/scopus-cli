@@ -40,7 +40,7 @@ scopus-cli search --title  climate AND africa AND education
 Search for matches only in the title and abstract
 
 ```
-scopus-cli search --titleabs  climate AND africa AND education
+scopus-cli search --title-abs  climate AND africa AND education
 ```
 
 Search Scopus using scopus query language:

@@ -133,7 +133,7 @@ export default async function search(args: any) {
     query = query.split(/\r?\n/);
   }
   const scopusOptions: ScopusSearchRequest = {
-    query: buildQuery(query, args.title, args.titleabs).trim(),
+    query: buildQuery(query, args.title, args.titleAbs).trim(),
   };
   if (args.count) {
     const res = await handleCount(scopusOptions);
