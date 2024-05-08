@@ -54,7 +54,10 @@ function searchBuilder(query: any) {
     if (query[i].match(/(\w+)\.\.\./)) {
       const key = query[i].match(/(\w+)\.\.\./)[1];
       // open a file
-      const file = `searchterms/${key}.txt`;
+      let file = `searchterms/${key}.txt`;
+      if (!fs.existsSync(file)) {
+        file = `${os.homedir()}/.config/scopus-cli/searchterms/${key}.txt`;
+      }
       let result = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : key;
       // split result into an array by new line
       const resultarr = result.split(/\r?\n/);
