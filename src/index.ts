@@ -57,7 +57,11 @@ yargs(hideBin(process.argv))
           type: 'boolean',
         })
         .option('apiKey', {
-          describe: 'API key',
+          describe: 'Add API key, --apiKey <API_KEY>',
+          type: 'string',
+        })
+        .option('config', {
+          describe: 'Add API key, --config <API_KEY>',
           type: 'string',
         })
         .option('keyinfo', {
@@ -85,6 +89,9 @@ yargs(hideBin(process.argv))
     if (argv.save && argv.autosave) {
       console.log('Please provide only one of --save or --autosave.');
       process.exit(1);
+    }
+    if (argv.config) {
+      argv.apiKey = argv.config;
     }
     await search(argv);
   })

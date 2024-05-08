@@ -78,6 +78,8 @@ Add new api key:
 
 ```
 scopus-cli search --title  climate AND africa AND education --apiKey <API_KEY>
+or
+scopus-cli search --title  climate AND africa AND education --config <API_KEY>
 ```
 
 Test Key capabilities:
