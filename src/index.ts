@@ -2,6 +2,7 @@
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import search from './utils/parser';
+import setApiKey from './utils/config';
 
 yargs(hideBin(process.argv))
   .command(
@@ -70,7 +71,16 @@ yargs(hideBin(process.argv))
         });
     },
   )
+  .command(
+    'config set api-key',
+    'Set the API key to be used for the search',
+  )
   .middleware(async (argv) => {
+    if (argv._[0] === 'config') {
+      console.log('Config command');
+      await setApiKey();
+      process.exit(0);
+    }
     if (!argv.searchQuery) {
       console.error('Search query is required');
       process.exit(1);
