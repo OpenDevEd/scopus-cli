@@ -10,7 +10,7 @@ import {
   urlEncodeQuery,
   validateParameters,
 } from './utils/search';
-import { quotaExceededError } from './utils/utility';
+import { isStringTooLong, quotaExceededError } from './utils/utility';
 
 export default class ScopusSDK {
   private apiKey: string;
@@ -204,6 +204,17 @@ export default class ScopusSDK {
       //     count: perPage?.toString(),
       //   });
       // };
+      const isLong = await isStringTooLong({
+        query: encodedQuery,
+        view,
+        start: (page * perPage - perPage).toString(),
+        count: perPage?.toString(),
+      }, this.baseUrl, this.headers);
+
+      if (isLong) {
+        console.error('\x1b[31m-->Search query is too long\x1b[0m');
+        process.exit(1);
+      }
 
       // Make GET request to Scopus API
       const url = `${this.baseUrl}/search/scopus?query=${encodedQuery}&view=${view}&start=${(

@@ -98,7 +98,9 @@ function searchBuilder(query: any) {
 function buildQuery(query: any, title?:boolean, titleAndAbstract?:boolean) {
   let searchQuery = searchBuilder(query);
   if (title) {
-    searchQuery = `TITLE(${searchQuery})`;
+    if (searchQuery.trim().startsWith('(') && searchQuery.trim().endsWith(')')) {
+      searchQuery = `TITLE${searchQuery}`;
+    } else searchQuery = `TITLE(${searchQuery})`;
   }
   if (titleAndAbstract) {
     searchQuery = `TITLE-ABS-KEY(${searchQuery})`;

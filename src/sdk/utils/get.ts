@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { ScopusSearchResponse } from '../types/scopusSearchResponse';
 
 async function GET(
