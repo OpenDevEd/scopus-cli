@@ -1,8 +1,8 @@
 # Installation
 
 ```
-git clone git@github.com:OpenDevEd/scopus-sdk.git
-cd scopus-sdk
+git clone git@github.com:OpenDevEd/scopus-cli.git
+cd scopus-cli
 npm install
 npm run build
 npm link
@@ -12,8 +12,8 @@ scopus-cli --help
 Alternatively, you can use:
 
 ```
-git clone git@github.com:OpenDevEd/scopus-sdk.git
-cd scopus-sdk
+git clone git@github.com:OpenDevEd/scopus-cli.git
+cd scopus-cli
 npm run setup
 ```
 
