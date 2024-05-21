@@ -57,13 +57,13 @@ yargs(hideBin(process.argv))
           describe: 'Save the search results to a json file with the search string as the filename',
           type: 'boolean',
         })
-        .option('apiKey', {
-          describe: 'Add API key, --apiKey <API_KEY>',
+        .option('date', {
+          describe: 'Date of the search, either a year or a range of years separated by a hyphen. E.g. 2019-2020',
           type: 'string',
         })
-        .option('config', {
-          describe: 'Add API key, --config <API_KEY>',
-          type: 'string',
+        .option('sort', {
+          describe: 'Sort the search results by relevance or date in ascending or descending order. E.g. +relevance, -date',
+          choices: ['relevance', '+relevance', '-relevance', 'date', '+date', '-date'],
         })
         .option('keyinfo', {
           describe: 'Key capabilities',

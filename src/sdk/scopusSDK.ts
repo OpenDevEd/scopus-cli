@@ -7,6 +7,7 @@ import {
   handleAllPages,
   handleAllPagesInChunks,
   handleMultiplePages,
+  parseSort,
   urlEncodeQuery,
   validateParameters,
 } from './utils/search';
@@ -174,6 +175,8 @@ export default class ScopusSDK {
     startPage,
     endPage,
     chunkSize,
+    date,
+    sort,
   }: ScopusSearchRequest): Promise<AxiosResponse<ScopusSearchResponse>> {
     try {
       // Encode query string and replace spaces with '+'
@@ -219,7 +222,7 @@ export default class ScopusSDK {
       // Make GET request to Scopus API
       const url = `${this.baseUrl}/search/scopus?query=${encodedQuery}&view=${view}&start=${(
         page * perPage - perPage
-      ).toString()}&count=${perPage?.toString()}`;
+      ).toString()}&count=${perPage?.toString()}${date ? `&date=${date}` : ''}${sort ? `&sort=${parseSort(sort)}` : ''}`;
       const response = await GET(
         url,
         this.headers,

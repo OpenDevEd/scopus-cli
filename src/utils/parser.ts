@@ -140,6 +140,9 @@ export default async function search(args: any) {
   const scopusOptions: ScopusSearchRequest = {
     query: buildQuery(query, args.title, args.titleAbs).trim(),
   };
+  if (args.date) {
+    scopusOptions.date = args.date;
+  }
   if (args.count) {
     const res = await handleCount(scopusOptions);
     return res;
@@ -176,6 +179,32 @@ export default async function search(args: any) {
   if (args.chunkSize) {
     scopusOptions.chunkSize = args.chunkSize;
   }
+
+  if (args.sort) {
+    switch (args.sort) {
+      case '+relevance':
+        scopusOptions.sort = { field: 'relevancy', order: 'asc' };
+        break;
+      case '-relevance':
+        scopusOptions.sort = { field: 'relevancy', order: 'desc' };
+        break;
+      case 'relevance':
+        scopusOptions.sort = { field: 'relevancy' };
+        break;
+      case '+date':
+        scopusOptions.sort = { field: 'pubyear', order: 'asc' };
+        break;
+      case '-date':
+        scopusOptions.sort = { field: 'pubyear', order: 'desc' };
+        break;
+      case 'date':
+        scopusOptions.sort = { field: 'pubyear' };
+        break;
+      default:
+        break;
+    }
+  }
+
   scopusOptions.retriveAllPages = !!args.allpages;
 
   const res = await saveAndSearch(scopusOptions);
