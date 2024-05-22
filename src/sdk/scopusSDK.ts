@@ -191,7 +191,11 @@ export default class ScopusSDK {
         perPage,
       );
       if (retriveAllPages) {
-        perPage = 25;
+        if (view !== 'COMPLETE') {
+          perPage = 200;
+        } else {
+          perPage = 25;
+        }
         page = 1;
       }
 
@@ -207,12 +211,16 @@ export default class ScopusSDK {
       //     count: perPage?.toString(),
       //   });
       // };
-      const isLong = await isStringTooLong({
-        query: encodedQuery,
-        view,
-        start: (page * perPage - perPage).toString(),
-        count: perPage?.toString(),
-      }, this.baseUrl, this.headers);
+      const isLong = await isStringTooLong(
+        {
+          query: encodedQuery,
+          view,
+          start: (page * perPage - perPage).toString(),
+          count: perPage?.toString(),
+        },
+        this.baseUrl,
+        this.headers,
+      );
 
       if (isLong) {
         console.error('\x1b[31m-->Search query is too long\x1b[0m');
@@ -220,14 +228,16 @@ export default class ScopusSDK {
       }
 
       // Make GET request to Scopus API
-      const url = `${this.baseUrl}/search/scopus?query=${encodedQuery}&view=${view}&start=${(
-        page * perPage - perPage
-      ).toString()}&count=${perPage?.toString()}${date ? `&date=${date}` : ''}${sort ? `&sort=${parseSort(sort)}` : ''}`;
-      const response = await GET(
-        url,
-        this.headers,
-        {},
-      );
+      const url = `${
+        this.baseUrl
+      }/search/scopus?query=${encodedQuery}&view=${view}${
+        retriveAllPages
+          ? '&cursor=*'
+          : `&start=${(page * perPage - perPage).toString()}`
+      }&count=${perPage?.toString()}${date ? `&date=${date}` : ''}${
+        sort ? `&sort=${parseSort(sort)}` : ''
+      }`;
+      const response = await GET(url, this.headers, {});
       // console.log('response:', response);
 
       if (retriveAllPages) {
