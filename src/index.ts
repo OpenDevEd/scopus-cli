@@ -45,7 +45,7 @@ yargs(hideBin(process.argv))
           type: 'number',
         })
         .option('time', {
-          describe: 'Time of the search',
+          describe: 'Append the time of the search to the name of the auto-saved file',
           type: 'boolean',
           default: true,
         })
