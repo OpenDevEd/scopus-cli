@@ -236,10 +236,13 @@ export async function handleAllPagesInChunks(
     start = end;
     chunk['search-results'].entry = [];
   }
+  fs.unlinkSync(`${toJson}.info.txt`);
   while (next) {
-    console.log(`Retrieving page ${page}`);
+    let infoString = `Retrieving page ${page}`;
     page += 1;
     const nextData = await GET(next['@href'], headers, {});
+    const remainingQueries = nextData.headers['x-ratelimit-remaining'];
+    infoString += `\n- Remaining queries: ${remainingQueries}`;
     chunk['search-results'].entry.push(...nextData.data['search-results'].entry);
     next = getNext(nextData.data['search-results'].link);
     if (chunk['search-results'].entry.length >= chunkSize || !next) {
@@ -255,7 +258,11 @@ export async function handleAllPagesInChunks(
       );
       start = end;
       chunk['search-results'].entry = [];
+      infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
+      infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
     }
+    console.log(infoString);
+    fs.appendFileSync(`${toJson}.info.txt`, `${infoString}\n`);
   }
   return metadata(data, meta, 'original');
 }
