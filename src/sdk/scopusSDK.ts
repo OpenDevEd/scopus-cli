@@ -11,7 +11,7 @@ import {
   urlEncodeQuery,
   validateParameters,
 } from './utils/search';
-import { isStringTooLong, quotaExceededError } from './utils/utility';
+import { quotaExceededError } from './utils/utility';
 
 export default class ScopusSDK {
   private apiKey: string;
