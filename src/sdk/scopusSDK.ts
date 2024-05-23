@@ -244,7 +244,7 @@ export default class ScopusSDK {
 
       const infoLength = `Query length: ${queryLength}\nURL length: ${urlLength}\nMax length: ${maxLength}`;
       console.log(infoLength);
-      fs.writeFileSync('info.txt', infoLength);
+      fs.writeFileSync('infoLength.txt', infoLength);
       if (urlLength > maxLength) {
         console.error(
           '\x1b[31m-->URL length is too long. Please reduce the query length\x1b[0m',
