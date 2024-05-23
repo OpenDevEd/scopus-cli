@@ -204,6 +204,10 @@ export default async function search(args: any) {
     }
   }
 
+  if (args.keyType) {
+    scopusOptions.keyType = args.keyType;
+  }
+
   scopusOptions.retriveAllPages = !!args.allpages;
 
   const meta: Meta = {
