@@ -211,21 +211,21 @@ export default class ScopusSDK {
       //     count: perPage?.toString(),
       //   });
       // };
-      const isLong = await isStringTooLong(
-        {
-          query: encodedQuery,
-          view,
-          start: (page * perPage - perPage).toString(),
-          count: perPage?.toString(),
-        },
-        this.baseUrl,
-        this.headers,
-      );
+      // const isLong = await isStringTooLong(
+      //   {
+      //     query: encodedQuery,
+      //     view,
+      //     start: (page * perPage - perPage).toString(),
+      //     count: perPage?.toString(),
+      //   },
+      //   this.baseUrl,
+      //   this.headers,
+      // );
 
-      if (isLong) {
-        console.error('\x1b[31m-->Search query is too long\x1b[0m');
-        process.exit(1);
-      }
+      // if (isLong) {
+      //   console.error('\x1b[31m-->Search query is too long\x1b[0m');
+      //   process.exit(1);
+      // }
 
       // Make GET request to Scopus API
       const url = `${
@@ -237,6 +237,21 @@ export default class ScopusSDK {
       }&count=${perPage?.toString()}${date ? `&date=${date}` : ''}${
         sort ? `&sort=${parseSort(sort)}` : ''
       }`;
+
+      const queryLength = query.length;
+      const urlLength = url.length;
+      const maxLength = 2800;
+
+      const infoLength = `Query length: ${queryLength}\nURL length: ${urlLength}\nMax length: ${maxLength}`;
+      console.log(infoLength);
+      fs.writeFileSync('info.txt', infoLength);
+      if (urlLength > maxLength) {
+        console.error(
+          '\x1b[31m-->URL length is too long. Please reduce the query length\x1b[0m',
+        );
+        process.exit(1);
+      }
+
       const response = await GET(url, this.headers, {});
       // console.log('response:', response);
 

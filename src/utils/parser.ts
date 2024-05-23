@@ -180,25 +180,13 @@ export default async function search(args: any) {
     scopusOptions.chunkSize = args.chunkSize;
   }
 
-  if (args.sort) {
-    switch (args.sort) {
-      case '+relevance':
-        scopusOptions.sort = { field: 'relevancy', order: 'asc' };
-        break;
-      case '-relevance':
-        scopusOptions.sort = { field: 'relevancy', order: 'desc' };
-        break;
+  if (args.sortBy) {
+    switch (args.sortBy) {
       case 'relevance':
-        scopusOptions.sort = { field: 'relevancy' };
-        break;
-      case '+date':
-        scopusOptions.sort = { field: 'pubyear', order: 'asc' };
-        break;
-      case '-date':
-        scopusOptions.sort = { field: 'pubyear', order: 'desc' };
+        scopusOptions.sort = { field: 'relevancy', order: args.sortOrder };
         break;
       case 'date':
-        scopusOptions.sort = { field: 'pubyear' };
+        scopusOptions.sort = { field: 'pubyear', order: args.sortOrder };
         break;
       default:
         break;

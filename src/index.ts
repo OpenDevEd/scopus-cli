@@ -61,9 +61,15 @@ yargs(hideBin(process.argv))
           describe: 'Date of the search, either a year or a range of years separated by a hyphen. E.g. 2019-2020',
           type: 'string',
         })
-        .option('sort', {
-          describe: 'Sort the search results by relevance or date in ascending or descending order. E.g. +relevance, -date',
-          choices: ['relevance', '+relevance', '-relevance', 'date', '+date', '-date'],
+        .option('sort-by', {
+          describe: 'Sort the search results by relevance or date in ascending or descending order. E.g. relevance, date',
+          choices: ['relevance', 'date'],
+          default: 'relevance',
+        })
+        .option('sort-order', {
+          describe: 'Sort the search results by relevance or date in ascending or descending order. E.g. asc, desc',
+          choices: ['asc', 'desc'],
+          default: 'desc',
         })
         .option('keyinfo', {
           describe: 'Key capabilities',
