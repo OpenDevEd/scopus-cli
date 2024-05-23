@@ -197,6 +197,38 @@ export default async function search(args: any) {
 
   const res = await saveAndSearch(scopusOptions);
   if (args.save || args.autosave) {
+    const jsonData = res.data;
+    const output = {
+      meta: {
+        version: 'OpenDevEd_jsonUploaderV01',
+        query: scopusOptions.query,
+        searchTerm: query.join(' '),
+        totalResults: jsonData['search-results']['opensearch:totalResults'],
+        source: 'Scopus',
+        sourceFormat: 'original',
+        date: new Date().toISOString().replace('T', ' ').replace(/\..+/, ''),
+        // eslint-disable-next-line no-nested-ternary
+        searchScope: args.title ? 'title' : args.titleAbs ? 'title_abstract_keywords' : 'all',
+        page: scopusOptions.page || 1,
+        resultsPerPage: scopusOptions.perPage || 25,
+        firstItem: jsonData['search-results']['opensearch:startIndex'],
+        startingPage: scopusOptions.startPage || '',
+        endingPage: scopusOptions.endPage || '',
+        filters: {
+          view: args.view || 'STANDARD',
+          date: args.date || '',
+        },
+        groupBy: '',
+        sortBy: {
+          field: args.sortBy || 'relevance',
+          order: args.sortOrder || 'desc',
+        },
+      },
+      resutls: jsonData,
+    };
+    fs.writeFileSync(`${scopusOptions.toJson}.json`, JSON.stringify(output, null, 2));
+  }
+  if (args.save || args.autosave) {
     const configJson = {
       date: new Date().toISOString().replace('T', ' ').replace(/\..+/, ''),
       ...scopusOptions,
