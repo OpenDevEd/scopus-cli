@@ -83,7 +83,22 @@ export interface ScopusSearchRequest {
   endPage?: number;
   perPage?: number;
   page?: number;
+  resultsNumber?: number;
+  keyType?: 'Developer' | 'Institutional';
+  meta: Meta;
 }
+
+export type Meta = {
+  query: string;
+  searchTerm: string;
+  searchScope: 'title' | 'title_abstract_keywords' | 'all';
+  filters: object;
+  groupBy: string;
+  sortBy: {
+    field: string;
+    order: 'asc' | 'desc';
+  };
+};
 
 export type Field = 'prism:url'
 | 'dc:identifier'

@@ -3,7 +3,7 @@ import os from 'os';
 import readlineSync from 'readline-sync';
 import path from 'path';
 import ScopusSDK from '../sdk/scopusSDK';
-import { ScopusSearchRequest } from '../sdk/types/scopusSearchRequest';
+import { Meta, ScopusSearchRequest } from '../sdk/types/scopusSearchRequest';
 
 function getKey() {
   const keyFile = `${os.homedir()}/.config/scopus-cli/scopus-api-key.txt`;
@@ -120,8 +120,8 @@ async function handleCount(scopusOptions: ScopusSearchRequest) {
   scopusOptions.perPage = 1;
   scopusOptions.page = 1;
   const results = await saveAndSearch(scopusOptions);
-  console.log('count:', results.data['search-results']['opensearch:totalResults']);
-  return results.data['search-results']['opensearch:totalResults'];
+  console.log('count:', results.resutls['search-results']['opensearch:totalResults']);
+  return results.resutls['search-results']['opensearch:totalResults'];
 }
 
 export default async function search(args: any) {
@@ -139,6 +139,17 @@ export default async function search(args: any) {
   }
   const scopusOptions: ScopusSearchRequest = {
     query: buildQuery(query, args.title, args.titleAbs).trim(),
+    meta: {
+      query: '',
+      searchTerm: '',
+      searchScope: 'title',
+      filters: undefined,
+      groupBy: '',
+      sortBy: {
+        field: '',
+        order: 'asc',
+      },
+    },
   };
   if (args.date) {
     scopusOptions.date = args.date;
@@ -172,8 +183,8 @@ export default async function search(args: any) {
     args.save = scopusOptions.toJson;
   }
 
-  if (args.perPage) {
-    scopusOptions.perPage = args.perPage;
+  if (args.resulsNumber) {
+    scopusOptions.resultsNumber = args.resulsNumber;
   }
 
   if (args.chunkSize) {
@@ -195,39 +206,24 @@ export default async function search(args: any) {
 
   scopusOptions.retriveAllPages = !!args.allpages;
 
+  const meta: Meta = {
+    query: buildQuery(query, false, false),
+    searchTerm: query.join(' '),
+    // eslint-disable-next-line no-nested-ternary
+    searchScope: args.title ? 'title' : args.titleAbs ? 'title_abstract_keywords' : 'all',
+    filters: {
+      view: args.view || 'STANDARD',
+      date: args.date || '',
+    },
+    groupBy: '',
+    sortBy: {
+      field: args.sortBy || 'relevance',
+      order: args.sortOrder || 'desc',
+    },
+  };
+  scopusOptions.meta = meta;
+
   const res = await saveAndSearch(scopusOptions);
-  if (args.save || args.autosave) {
-    const jsonData = res.data;
-    const output = {
-      meta: {
-        version: 'OpenDevEd_jsonUploaderV01',
-        query: scopusOptions.query,
-        searchTerm: query.join(' '),
-        totalResults: jsonData['search-results']['opensearch:totalResults'],
-        source: 'Scopus',
-        sourceFormat: 'original',
-        date: new Date().toISOString().replace('T', ' ').replace(/\..+/, ''),
-        // eslint-disable-next-line no-nested-ternary
-        searchScope: args.title ? 'title' : args.titleAbs ? 'title_abstract_keywords' : 'all',
-        page: scopusOptions.page || 1,
-        resultsPerPage: scopusOptions.perPage || 25,
-        firstItem: jsonData['search-results']['opensearch:startIndex'],
-        startingPage: scopusOptions.startPage || '',
-        endingPage: scopusOptions.endPage || '',
-        filters: {
-          view: args.view || 'STANDARD',
-          date: args.date || '',
-        },
-        groupBy: '',
-        sortBy: {
-          field: args.sortBy || 'relevance',
-          order: args.sortOrder || 'desc',
-        },
-      },
-      resutls: jsonData,
-    };
-    fs.writeFileSync(`${scopusOptions.toJson}.json`, JSON.stringify(output, null, 2));
-  }
   if (args.save || args.autosave) {
     const configJson = {
       date: new Date().toISOString().replace('T', ' ').replace(/\..+/, ''),
@@ -235,7 +231,7 @@ export default async function search(args: any) {
     };
     fs.writeFileSync(`${scopusOptions.toJson}.config.json`, JSON.stringify(configJson, null, 2));
   } else {
-    console.log(JSON.stringify(res.data, null, 2));
+    console.log(JSON.stringify(res, null, 2));
   }
-  return res.data;
+  return res;
 }

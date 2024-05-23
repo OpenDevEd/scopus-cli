@@ -35,8 +35,8 @@ yargs(hideBin(process.argv))
           describe: 'Count of the search results',
           type: 'boolean',
         })
-        .option('perPage', {
-          describe: 'Number of items per page',
+        .option('resulsNumber', {
+          describe: 'Number of items to retrieve',
           type: 'number',
         })
         .option('chunkSize', {

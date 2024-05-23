@@ -1,3 +1,28 @@
+export interface ReturnWithMeta {
+  meta: {
+    version: string;
+    query: string;
+    searchTerm: string;
+    totalResults: string;
+    source: string;
+    sourceFormat: string;
+    date: string;
+    searchScope: string;
+    page: number;
+    resultsPerPage: string;
+    firstItem: string;
+    startingPage: string;
+    endingPage?: string;
+    filters: object;
+    groupBy: string;
+    sortBy: {
+      field: string;
+      order: string;
+    };
+  };
+  resutls: ScopusSearchResponse;
+}
+
 // Main Interface
 export interface ScopusSearchResponse {
   'search-results': SearchResults;

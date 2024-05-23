@@ -1,9 +1,9 @@
 import fs from 'fs';
 import { AxiosError } from 'axios';
 import {
-  Facet, Field, Sorting, Subj,
+  Facet, Field, Meta, Sorting, Subj,
 } from '../types/scopusSearchRequest';
-import { Link, ScopusSearchResponse } from '../types/scopusSearchResponse';
+import { Link, ReturnWithMeta, ScopusSearchResponse } from '../types/scopusSearchResponse';
 import GET from './get';
 
 export function urlEncodeQuery(query: string) {
@@ -86,21 +86,24 @@ export function parseFacets(facets: Facet | Facet[]) {
 
 export function validateParameters(
   retrieveAllPages?: boolean,
-  startPage?: number,
-  endPage?: number,
   chunkSize?: number,
   toJson?: string,
-  perPage?: number,
+  resultsNumber?: number,
+  keyType?: 'Developer' | 'Institutional',
 ) {
-  if (retrieveAllPages && (startPage || endPage)) {
-    throw new Error('startPage and endPage are not allowed with retrieveAllPages');
-  }
-
-  if (chunkSize && (startPage || endPage)) throw new Error('startPage and endPage are not allowed with chunkSize');
   if (chunkSize && !toJson) throw new Error('toJson is required with chunkSize');
 
   // TODO: Remove this validation when the Scopus API is fixed
-  if (perPage && perPage > 25) throw new Error('perPage must be less than or equal to 25');
+  if (resultsNumber && keyType === 'Developer' && resultsNumber > 5000) throw new Error('resultsNumber must be less than or equal to 5000 for Developer keys');
+
+  if (retrieveAllPages && chunkSize) {
+    if (keyType === 'Developer') {
+      if (chunkSize < 25) console.warn('chunkSize must be greater than or equal to 25');
+    }
+    if (keyType === 'Institutional') {
+      if (chunkSize < 200) console.warn('chunkSize must be greater than or equal to 200');
+    }
+  }
 }
 
 export function parseCountAndStart(
@@ -121,30 +124,64 @@ function getNext(links: Link[]) {
   return links.find((l) => l['@ref'] === 'next');
 }
 
-export async function handleMultiplePages(
+export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: 'original' | 'chunk'): ReturnWithMeta {
+  const output = {
+    meta: {
+      version: 'OpenDevEd_jsonUploaderV01',
+      query: meta.query,
+      searchTerm: meta.searchTerm,
+      totalResults: data['search-results']['opensearch:totalResults'],
+      source: 'Scopus',
+      sourceFormat,
+      date: new Date().toISOString().replace('T', ' ').replace(/\..+/, ''),
+      // eslint-disable-next-line no-nested-ternary
+      searchScope: meta.searchScope,
+      page: 1,
+      resultsPerPage: data['search-results']['opensearch:itemsPerPage'],
+      firstItem: data['search-results']['opensearch:startIndex'],
+      startingPage: '',
+      endingPage: '',
+      filters: meta.filters,
+      groupBy: '',
+      sortBy: {
+        field: meta.sortBy.field,
+        order: meta.sortBy.order,
+      },
+    },
+    resutls: data,
+  };
+  return output;
+}
+
+export async function handleMultipleResutls(
   data: ScopusSearchResponse,
   headers: Record<string, string>,
-  start: number,
-  end: number,
-): Promise<ScopusSearchResponse> {
+  resultsNumber: number,
+  perPage: number,
+  meta: Meta,
+): Promise<ReturnWithMeta> {
   const links = data['search-results'].link;
   let next = getNext(links);
   const allData = data;
-  let page = start + 1;
-  while (next && page < end) {
-    console.log(`Retrieving page ${page}`);
-    page += 1;
+  let totalResults = perPage;
+  while (resultsNumber > 0) {
+    console.log(`Retrieving results from ${totalResults} to ${totalResults + perPage}`);
     const nextData = await GET(next['@href'], headers, {});
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
+    totalResults += perPage;
+    resultsNumber -= perPage;
     next = getNext(nextData.data['search-results'].link);
   }
-  return allData;
+  allData['search-results']['opensearch:itemsPerPage'] = totalResults.toString();
+  const allDataWithMeta = metadata(allData, meta, 'original');
+  return allDataWithMeta;
 }
 
 export async function handleAllPages(
   data: ScopusSearchResponse,
   headers: Record<string, string>,
-): Promise<ScopusSearchResponse> {
+  meta: Meta,
+): Promise<ReturnWithMeta> {
   const links = data['search-results'].link;
   let next = getNext(links);
   const allData = data;
@@ -156,8 +193,9 @@ export async function handleAllPages(
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     next = getNext(nextData.data['search-results'].link);
   }
-
-  return allData;
+  allData['search-results']['opensearch:itemsPerPage'] = allData['search-results']['opensearch:totalResults'];
+  const allDataWithMeta = metadata(allData, meta, 'original');
+  return allDataWithMeta;
 }
 
 export function formatNumber(num: number): string {
@@ -176,13 +214,28 @@ export async function handleAllPagesInChunks(
   headers: Record<string, string>,
   chunkSize: number,
   toJson: string,
-): Promise<ScopusSearchResponse> {
+  meta: Meta,
+): Promise<ReturnWithMeta> {
   const links = data['search-results'].link;
   let next = getNext(links);
   const chunk = data;
   let page = 1;
   let start = 0;
-  let end;
+  let end: number;
+  if (chunk['search-results'].entry.length >= chunkSize || !next) {
+    end = start + chunk['search-results'].entry.length;
+    const startFormatted = formatNumber(start + 1);
+    const endFormatted = formatNumber(end);
+    const dataWithMeta = metadata(chunk, meta, 'chunk');
+    chunk['search-results']['opensearch:startIndex'] = start.toString();
+    chunk['search-results']['opensearch:itemsPerPage'] = chunk['search-results'].entry.length.toString();
+    fs.writeFileSync(
+      `${toJson}-${startFormatted}-${endFormatted}.json`,
+      JSON.stringify(dataWithMeta, null, 2),
+    );
+    start = end;
+    chunk['search-results'].entry = [];
+  }
   while (next) {
     console.log(`Retrieving page ${page}`);
     page += 1;
@@ -193,16 +246,18 @@ export async function handleAllPagesInChunks(
       end = start + chunk['search-results'].entry.length;
       const startFormatted = formatNumber(start + 1);
       const endFormatted = formatNumber(end);
+      chunk['search-results']['opensearch:startIndex'] = start.toString();
+      chunk['search-results']['opensearch:itemsPerPage'] = chunk['search-results'].entry.length.toString();
+      const dataWithMeta = metadata(chunk, meta, 'chunk');
       fs.writeFileSync(
         `${toJson}-${startFormatted}-${endFormatted}.json`,
-        JSON.stringify(chunk, null, 2),
+        JSON.stringify(dataWithMeta, null, 2),
       );
       start = end;
       chunk['search-results'].entry = [];
     }
   }
-
-  return data;
+  return metadata(data, meta, 'original');
 }
 
 export async function testApi(apiKey: string) {
@@ -213,5 +268,21 @@ export async function testApi(apiKey: string) {
   } catch (error) {
     const err = error as AxiosError;
     console.error(err.response?.data);
+  }
+}
+
+export function checkLength(query: string, url: string) {
+  const queryLength = query.length;
+  const urlLength = url.length;
+  const maxLength = 2800;
+
+  const infoLength = `Query length: ${queryLength}\nURL length: ${urlLength}\nMax length: ${maxLength}`;
+  console.log(infoLength);
+  fs.writeFileSync('infoLength.txt', infoLength);
+  if (urlLength > maxLength) {
+    console.error(
+      '\x1b[31m-->URL length is too long. Please reduce the query length\x1b[0m',
+    );
+    process.exit(1);
   }
 }
