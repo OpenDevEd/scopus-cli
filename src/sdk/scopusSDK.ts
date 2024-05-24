@@ -87,6 +87,7 @@ export default class ScopusSDK {
       }&count=${perPage?.toString()}${date ? `&date=${date}` : ''}${
         sort ? `&sort=${parseSort(sort)}` : ''
       }`;
+      meta.queryUrl = url;
 
       checkLength(query, url);
 

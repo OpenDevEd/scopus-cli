@@ -2,12 +2,14 @@ export interface ReturnWithMeta {
   meta: {
     version: string;
     query: string;
+    queryUrl: string;
+    searchId: string;
     searchTerm: string;
     totalResults: string;
     source: string;
     sourceFormat: string;
     date: string;
-    searchScope: string;
+    searchField: string;
     page: number;
     resultsPerPage: string;
     firstItem: string;
@@ -20,7 +22,7 @@ export interface ReturnWithMeta {
       order: string;
     };
   };
-  results: ScopusSearchResponse;
+  results: Entry[];
 }
 
 // Main Interface

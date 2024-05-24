@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { AxiosError } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import {
   Facet, Field, Meta, Sorting, Subj,
 } from '../types/scopusSearchRequest';
@@ -129,13 +130,15 @@ export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: '
     meta: {
       version: 'OpenDevEd_jsonUploaderV01',
       query: meta.query,
+      queryUrl: meta.queryUrl,
+      searchId: uuidv4(),
       searchTerm: meta.searchTerm,
       totalResults: data['search-results']['opensearch:totalResults'],
       source: 'Scopus',
       sourceFormat,
       date: new Date().toISOString().replace('T', ' ').replace(/\..+/, ''),
       // eslint-disable-next-line no-nested-ternary
-      searchScope: meta.searchScope,
+      searchField: meta.searchScope,
       page: 1,
       resultsPerPage: data['search-results']['opensearch:itemsPerPage'],
       firstItem: data['search-results']['opensearch:startIndex'],
@@ -148,7 +151,7 @@ export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: '
         order: meta.sortBy.order,
       },
     },
-    results: data,
+    results: data['search-results'].entry,
   };
   return output;
 }

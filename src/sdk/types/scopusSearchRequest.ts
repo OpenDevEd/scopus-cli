@@ -90,6 +90,7 @@ export interface ScopusSearchRequest {
 
 export type Meta = {
   query: string;
+  queryUrl?: string;
   searchTerm: string;
   searchScope: 'title' | 'title_abstract_keywords' | 'all';
   filters: object;
