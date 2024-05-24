@@ -148,7 +148,7 @@ export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: '
         order: meta.sortBy.order,
       },
     },
-    resutls: data,
+    results: data,
   };
   return output;
 }

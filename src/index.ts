@@ -75,7 +75,7 @@ yargs(hideBin(process.argv))
           describe: 'Key capabilities',
           type: 'boolean',
         })
-        .option('keyType',{
+        .option('keyType', {
           describe: 'Key type',
           choices: ['Developer', 'Institutional'],
           default: 'Developer',

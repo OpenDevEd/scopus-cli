@@ -120,8 +120,8 @@ async function handleCount(scopusOptions: ScopusSearchRequest) {
   scopusOptions.perPage = 1;
   scopusOptions.page = 1;
   const results = await saveAndSearch(scopusOptions);
-  console.log('count:', results.resutls['search-results']['opensearch:totalResults']);
-  return results.resutls['search-results']['opensearch:totalResults'];
+  console.log('count:', results.results['search-results']['opensearch:totalResults']);
+  return results.results['search-results']['opensearch:totalResults'];
 }
 
 export default async function search(args: any) {

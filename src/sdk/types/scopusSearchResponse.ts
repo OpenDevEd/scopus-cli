@@ -20,7 +20,7 @@ export interface ReturnWithMeta {
       order: string;
     };
   };
-  resutls: ScopusSearchResponse;
+  results: ScopusSearchResponse;
 }
 
 // Main Interface
