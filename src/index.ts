@@ -35,7 +35,7 @@ yargs(hideBin(process.argv))
           describe: 'Count of the search results',
           type: 'boolean',
         })
-        .option('resulsNumber', {
+        .option('resultsNumber', {
           describe: 'Number of items to retrieve',
           type: 'number',
         })

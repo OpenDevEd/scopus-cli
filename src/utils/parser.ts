@@ -183,8 +183,8 @@ export default async function search(args: any) {
     args.save = scopusOptions.toJson;
   }
 
-  if (args.resulsNumber) {
-    scopusOptions.resultsNumber = args.resulsNumber;
+  if (args.resultsNumber) {
+    scopusOptions.resultsNumber = args.resultsNumber;
   }
 
   if (args.chunkSize) {
