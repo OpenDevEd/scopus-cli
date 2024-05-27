@@ -168,12 +168,15 @@ export async function handleMultipleResutls(
   const allData = data;
   let totalResults = perPage;
   while (resultsNumber > 0) {
-    console.log(`Retrieving results from ${totalResults} to ${totalResults + perPage}`);
+    let infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
     const nextData = await GET(next['@href'], headers, {});
+    const remainingQueries = nextData.headers['x-ratelimit-remaining'];
+    infoString += `\n- Remaining queries: ${remainingQueries}`;
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     totalResults += perPage;
     resultsNumber -= perPage;
     next = getNext(nextData.data['search-results'].link);
+    console.log(infoString);
   }
   allData['search-results']['opensearch:itemsPerPage'] = totalResults.toString();
   const allDataWithMeta = metadata(allData, meta, 'original');
@@ -190,11 +193,14 @@ export async function handleAllPages(
   const allData = data;
   let page = 1;
   while (next) {
-    console.log(`Retrieving page ${page}`);
+    let infoString = `Retrieving page ${page}`;
     page += 1;
     const nextData = await GET(next['@href'], headers, {});
+    const remainingQueries = nextData.headers['x-ratelimit-remaining'];
+    infoString += `\n- Remaining queries: ${remainingQueries}`;
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     next = getNext(nextData.data['search-results'].link);
+    console.log(infoString);
   }
   allData['search-results']['opensearch:itemsPerPage'] = allData['search-results']['opensearch:totalResults'];
   const allDataWithMeta = metadata(allData, meta, 'original');
