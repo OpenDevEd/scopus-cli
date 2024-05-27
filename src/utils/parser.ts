@@ -117,11 +117,11 @@ async function saveAndSearch(scopusOptions: ScopusSearchRequest) {
 }
 
 async function handleCount(scopusOptions: ScopusSearchRequest) {
-  scopusOptions.perPage = 1;
-  scopusOptions.page = 1;
+  scopusOptions.resultsNumber = 1;
   const results = await saveAndSearch(scopusOptions);
-  console.log('count:', results.results['search-results']['opensearch:totalResults']);
-  return results.results['search-results']['opensearch:totalResults'];
+  const totalResults: number = parseInt(results.meta.totalResults, 10);
+  console.log('count:', totalResults);
+  return totalResults;
 }
 
 export default async function search(args: any) {
