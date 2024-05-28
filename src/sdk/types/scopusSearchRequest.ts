@@ -101,6 +101,24 @@ export type Meta = {
   };
 };
 
+export type InfoObject = {
+  startTime: number,
+  endTime: number,
+  totalResults: number;
+  itemsPerPage: number;
+  totalNumberOfApiCallsNeeded: number;
+  timeTaken: number;
+  currentApiRequestCallNumber: number;
+  completionFraction: number;
+  estimatedTime: number;
+  remainingQuota: any;
+  timeToResetQuota: string;
+  progress: number;
+  remainingTime: number;
+  remainingQuotaAfterSearch: number;
+  remainingTimeFormated: string;
+};
+
 export type Field = 'prism:url'
 | 'dc:identifier'
 | 'eid'

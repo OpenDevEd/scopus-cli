@@ -2,7 +2,7 @@ import { AxiosError } from 'axios';
 import fs from 'fs';
 import GET from './utils/get';
 import { ReturnWithMeta } from './types/scopusSearchResponse';
-import { ScopusSearchRequest } from './types/scopusSearchRequest';
+import { InfoObject, ScopusSearchRequest } from './types/scopusSearchRequest';
 import {
   checkLength,
   handleAllPages,
@@ -53,7 +53,14 @@ export default class ScopusSDK {
         resultsNumber,
         keyType,
       );
+      let totalResults = resultsNumber;
+      const startTime = new Date().getTime();
       let perPage = 25;
+      let infoFile: string;
+
+      if (!toJson) infoFile = 'info';
+      else infoFile = toJson;
+
       if (keyType === 'Institutional') {
         if (resultsNumber < 200) {
           perPage = resultsNumber;
@@ -93,6 +100,63 @@ export default class ScopusSDK {
 
       const response = await GET(url, this.headers, {});
       let returns = metadata(response.data, meta, 'original');
+
+      if (retriveAllPages) {
+        totalResults = +response.data['search-results']['opensearch:totalResults'];
+      }
+      const itemsPerPage = +response.data['search-results']['opensearch:itemsPerPage'];
+      const totalNumberOfApiCallsNeeded = Math.ceil((totalResults / itemsPerPage));
+      const endTime = new Date().getTime();
+      const timeTaken = (endTime - startTime) / 1000;
+      const currentApiRequestCallNumber = 1;
+      const completionFraction = currentApiRequestCallNumber / totalNumberOfApiCallsNeeded;
+      const estimatedTime = timeTaken / completionFraction;
+      const estimatedTimeFormated = new Date(estimatedTime * 1000).toISOString().slice(11, 19);
+      const remainingQuota = response.headers['x-ratelimit-remaining'];
+      const timeToResetQuota = new Date(+response.headers['x-ratelimit-reset'] * 1000).toLocaleString();
+      const progress = Math.round((currentApiRequestCallNumber
+        / totalNumberOfApiCallsNeeded) * 100);
+      const remainingTime = estimatedTime - timeTaken;
+      const remainingTimeFormated = new Date(remainingTime * 1000).toISOString().slice(11, 19);
+      const remainingQuotaAfterSearch = parseInt(response.headers['x-ratelimit-remaining'], 10) - totalNumberOfApiCallsNeeded;
+
+      const infoString = `Total number of results: ${totalResults}
+Items per page: ${itemsPerPage}
+Total number of API calls needed: ${totalNumberOfApiCallsNeeded}
+Time taken: ${timeTaken} seconds
+Current API request call number: ${currentApiRequestCallNumber}
+Estimated time: ${estimatedTimeFormated}
+Remaining quota: ${remainingQuota}
+Remaining quota after search: ${remainingQuotaAfterSearch}${remainingQuotaAfterSearch < 0 ? '\nWarning: Query quota will be exhausted before search is finished.' : ''}
+Time to reset quota: ${timeToResetQuota}
+Progress: ${progress}%
+Remaining time: ${remainingTimeFormated}
+\n`;
+
+      if (fs.existsSync(`${infoFile}.info.txt`)) {
+        fs.unlinkSync(`${toJson}.info.txt`);
+      }
+      fs.writeFileSync(`${infoFile}.info.txt`, infoString);
+      console.log(infoString);
+
+      const infoObject: InfoObject = {
+        startTime,
+        endTime,
+        totalResults,
+        itemsPerPage,
+        totalNumberOfApiCallsNeeded,
+        timeTaken,
+        currentApiRequestCallNumber,
+        completionFraction,
+        estimatedTime,
+        remainingQuota,
+        timeToResetQuota,
+        progress,
+        remainingTime,
+        remainingQuotaAfterSearch,
+        remainingTimeFormated,
+      };
+
       if (retriveAllPages) {
         if (chunkSize) {
           returns = await handleAllPagesInChunks(
@@ -112,6 +176,8 @@ export default class ScopusSDK {
           resultsNumber,
           perPage,
           meta,
+          infoFile,
+          infoObject,
         );
       }
       // Write response to JSON file if toJson is provided

@@ -2,7 +2,7 @@ import fs from 'fs';
 import { AxiosError } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Facet, Field, Meta, Sorting, Subj,
+  Facet, Field, InfoObject, Meta, Sorting, Subj,
 } from '../types/scopusSearchRequest';
 import { Link, ReturnWithMeta, ScopusSearchResponse } from '../types/scopusSearchResponse';
 import GET from './get';
@@ -162,6 +162,8 @@ export async function handleMultipleResutls(
   resultsNumber: number,
   perPage: number,
   meta: Meta,
+  infoFile: string,
+  infoObject: InfoObject,
 ): Promise<ReturnWithMeta> {
   const links = data['search-results'].link;
   let next = getNext(links);
@@ -170,13 +172,25 @@ export async function handleMultipleResutls(
   while (resultsNumber > 0) {
     let infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
     const nextData = await GET(next['@href'], headers, {});
+    infoObject.endTime = new Date().getTime();
+    infoObject.timeTaken = (infoObject.endTime - infoObject.startTime) / 1000;
+    infoObject.completionFraction = infoObject.currentApiRequestCallNumber
+      / infoObject.totalNumberOfApiCallsNeeded;
+    infoObject.estimatedTime = infoObject.timeTaken / infoObject.completionFraction;
+    infoObject.remainingTime = infoObject.estimatedTime - infoObject.timeTaken;
+    infoObject.remainingTimeFormated = new Date(infoObject.remainingTime * 1000)
+      .toISOString().slice(11, 19);
+    infoObject.currentApiRequestCallNumber += 1;
+    infoString += `\n- Progress: ${Math.round((infoObject.currentApiRequestCallNumber / infoObject.totalNumberOfApiCallsNeeded) * 100)}%`;
+    infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
     const remainingQueries = nextData.headers['x-ratelimit-remaining'];
-    infoString += `\n- Remaining queries: ${remainingQueries}`;
+    infoString += `\n- Remaining Quota: ${remainingQueries}`;
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     totalResults += perPage;
     resultsNumber -= perPage;
     next = getNext(nextData.data['search-results'].link);
     console.log(infoString);
+    fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   }
   allData['search-results']['opensearch:itemsPerPage'] = totalResults.toString();
   const allDataWithMeta = metadata(allData, meta, 'original');
@@ -245,7 +259,6 @@ export async function handleAllPagesInChunks(
     start = end;
     chunk['search-results'].entry = [];
   }
-  fs.unlinkSync(`${toJson}.info.txt`);
   while (next) {
     let infoString = `Retrieving page ${page}`;
     page += 1;
