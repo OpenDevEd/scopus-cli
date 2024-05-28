@@ -165,9 +165,10 @@ Remaining time: ${remainingTimeFormated}
             chunkSize,
             toJson,
             meta,
+            infoObject,
           );
         }
-        returns = await handleAllPages(response.data, this.headers, meta);
+        returns = await handleAllPages(response.data, this.headers, meta, infoFile, infoObject);
       }
       if (resultsNumber > 0) {
         returns = await handleMultipleResutls(

@@ -201,6 +201,8 @@ export async function handleAllPages(
   data: ScopusSearchResponse,
   headers: Record<string, string>,
   meta: Meta,
+  infoFile: string,
+  infoObject: InfoObject,
 ): Promise<ReturnWithMeta> {
   const links = data['search-results'].link;
   let next = getNext(links);
@@ -210,11 +212,23 @@ export async function handleAllPages(
     let infoString = `Retrieving page ${page}`;
     page += 1;
     const nextData = await GET(next['@href'], headers, {});
+    infoObject.endTime = new Date().getTime();
+    infoObject.timeTaken = (infoObject.endTime - infoObject.startTime) / 1000;
+    infoObject.completionFraction = infoObject.currentApiRequestCallNumber
+      / infoObject.totalNumberOfApiCallsNeeded;
+    infoObject.estimatedTime = infoObject.timeTaken / infoObject.completionFraction;
+    infoObject.remainingTime = infoObject.estimatedTime - infoObject.timeTaken;
+    infoObject.remainingTimeFormated = new Date(infoObject.remainingTime * 1000)
+      .toISOString().slice(11, 19);
+    infoObject.currentApiRequestCallNumber += 1;
+    infoString += `\n- Progress: ${Math.round((infoObject.currentApiRequestCallNumber / infoObject.totalNumberOfApiCallsNeeded) * 100)}%`;
+    infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
     const remainingQueries = nextData.headers['x-ratelimit-remaining'];
     infoString += `\n- Remaining queries: ${remainingQueries}`;
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     next = getNext(nextData.data['search-results'].link);
     console.log(infoString);
+    fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   }
   allData['search-results']['opensearch:itemsPerPage'] = allData['search-results']['opensearch:totalResults'];
   const allDataWithMeta = metadata(allData, meta, 'original');
@@ -238,6 +252,7 @@ export async function handleAllPagesInChunks(
   chunkSize: number,
   toJson: string,
   meta: Meta,
+  infoObject: InfoObject,
 ): Promise<ReturnWithMeta> {
   const links = data['search-results'].link;
   let next = getNext(links);
@@ -263,6 +278,17 @@ export async function handleAllPagesInChunks(
     let infoString = `Retrieving page ${page}`;
     page += 1;
     const nextData = await GET(next['@href'], headers, {});
+    infoObject.endTime = new Date().getTime();
+    infoObject.timeTaken = (infoObject.endTime - infoObject.startTime) / 1000;
+    infoObject.completionFraction = infoObject.currentApiRequestCallNumber
+      / infoObject.totalNumberOfApiCallsNeeded;
+    infoObject.estimatedTime = infoObject.timeTaken / infoObject.completionFraction;
+    infoObject.remainingTime = infoObject.estimatedTime - infoObject.timeTaken;
+    infoObject.remainingTimeFormated = new Date(infoObject.remainingTime * 1000)
+      .toISOString().slice(11, 19);
+    infoObject.currentApiRequestCallNumber += 1;
+    infoString += `\n- Progress: ${Math.round((infoObject.currentApiRequestCallNumber / infoObject.totalNumberOfApiCallsNeeded) * 100)}%`;
+    infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
     const remainingQueries = nextData.headers['x-ratelimit-remaining'];
     infoString += `\n- Remaining queries: ${remainingQueries}`;
     chunk['search-results'].entry.push(...nextData.data['search-results'].entry);
