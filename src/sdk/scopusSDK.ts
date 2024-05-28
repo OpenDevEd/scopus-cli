@@ -118,7 +118,7 @@ export default class ScopusSDK {
         / totalNumberOfApiCallsNeeded) * 100);
       const remainingTime = estimatedTime - timeTaken;
       const remainingTimeFormated = new Date(remainingTime * 1000).toISOString().slice(11, 19);
-      const remainingQuotaAfterSearch = parseInt(response.headers['x-ratelimit-remaining'], 10) - totalNumberOfApiCallsNeeded;
+      const remainingQuotaAfterSearch = parseInt(response.headers['x-ratelimit-remaining'], 10) - totalNumberOfApiCallsNeeded + 1;
 
       const infoString = `Total number of results: ${totalResults}
 Items per page: ${itemsPerPage}
