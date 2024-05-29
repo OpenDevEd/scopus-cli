@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { AxiosError } from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 import {
   Facet, Field, InfoObject, Meta, Sorting, Subj,
 } from '../types/scopusSearchRequest';
@@ -89,13 +88,13 @@ export function validateParameters(
   retrieveAllPages?: boolean,
   chunkSize?: number,
   toJson?: string,
-  resultsNumber?: number,
+  limit?: number,
   keyType?: 'Developer' | 'Institutional',
 ) {
   if (chunkSize && !toJson) throw new Error('toJson is required with chunkSize');
 
   // TODO: Remove this validation when the Scopus API is fixed
-  if (resultsNumber && keyType === 'Developer' && resultsNumber > 5000) throw new Error('resultsNumber must be less than or equal to 5000 for Developer keys');
+  if (limit && keyType === 'Developer' && limit > 5000) throw new Error('limit must be less than or equal to 5000 for Developer keys');
 
   if (retrieveAllPages && chunkSize) {
     if (keyType === 'Developer') {
@@ -131,7 +130,7 @@ export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: '
       version: 'OpenDevEd_jsonUploaderV01',
       query: meta.query,
       queryUrl: meta.queryUrl,
-      searchId: uuidv4(),
+      searchId: meta.searchId,
       searchTerm: meta.searchTerm,
       totalResults: data['search-results']['opensearch:totalResults'],
       source: 'Scopus',
@@ -156,10 +155,10 @@ export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: '
   return output;
 }
 
-export async function handleMultipleResutls(
+export async function handleMultipleResults(
   data: ScopusSearchResponse,
   headers: Record<string, string>,
-  resultsNumber: number,
+  limit: number,
   perPage: number,
   meta: Meta,
   infoFile: string,
@@ -169,7 +168,7 @@ export async function handleMultipleResutls(
   let next = getNext(links);
   const allData = data;
   let totalResults = perPage;
-  while (resultsNumber > 0 && next) {
+  while (limit > 0 && next) {
     let infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
     const nextData = await GET(next['@href'], headers, {});
     infoObject.endTime = new Date().getTime();
@@ -187,7 +186,7 @@ export async function handleMultipleResutls(
     infoString += `\n- Remaining Quota: ${remainingQueries}`;
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     totalResults += perPage;
-    resultsNumber -= perPage;
+    limit -= perPage;
     next = getNext(nextData.data['search-results'].link);
     console.log(infoString);
     fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);

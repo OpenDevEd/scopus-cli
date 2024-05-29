@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 import GET from './utils/get';
 import { ReturnWithMeta } from './types/scopusSearchResponse';
 import { InfoObject, ScopusSearchRequest } from './types/scopusSearchRequest';
@@ -7,7 +8,7 @@ import {
   checkLength,
   handleAllPages,
   handleAllPagesInChunks,
-  handleMultipleResutls,
+  handleMultipleResults,
   metadata,
   parseSort,
   urlEncodeQuery,
@@ -35,7 +36,7 @@ export default class ScopusSDK {
     view = 'STANDARD',
     toJson,
     retriveAllPages = false,
-    resultsNumber = 25,
+    limit = 25,
     chunkSize,
     date,
     sort,
@@ -50,10 +51,10 @@ export default class ScopusSDK {
         retriveAllPages,
         chunkSize,
         toJson,
-        resultsNumber,
+        limit,
         keyType,
       );
-      let totalResults = resultsNumber;
+      let totalResults = limit;
       const startTime = new Date().getTime();
       let perPage = 25;
       let infoFile: string;
@@ -62,21 +63,21 @@ export default class ScopusSDK {
       else infoFile = toJson;
 
       if (keyType === 'Institutional') {
-        if (resultsNumber < 200) {
-          perPage = resultsNumber;
-          resultsNumber = 0;
+        if (limit < 200) {
+          perPage = limit;
+          limit = 0;
         } else {
           perPage = 200;
-          resultsNumber -= 200;
+          limit -= 200;
         }
       } else {
         // eslint-disable-next-line no-lonely-if
-        if (resultsNumber < 25) {
-          perPage = resultsNumber;
-          resultsNumber = 0;
+        if (limit < 25) {
+          perPage = limit;
+          limit = 0;
         } else {
           perPage = 25;
-          resultsNumber -= 25;
+          limit -= 25;
         }
       }
       let useCursor = false;
@@ -123,7 +124,8 @@ export default class ScopusSDK {
       const remainingTimeFormated = new Date(remainingTime * 1000).toISOString().slice(11, 19);
       const remainingQuotaAfterSearch = parseInt(response.headers['x-ratelimit-remaining'], 10) - totalNumberOfApiCallsNeeded + 1;
 
-      const infoString = `Total number of results: ${totalResults}
+      const searchId = uuidv4();
+      let infoString = `Total number of results: ${totalResults}
 Items per page: ${itemsPerPage}
 Total number of API calls needed: ${totalNumberOfApiCallsNeeded}
 Time taken: ${timeTaken} seconds
@@ -136,10 +138,13 @@ Progress: ${progress}%
 Remaining time: ${remainingTimeFormated}
 \n`;
 
-      if (fs.existsSync(`${infoFile}.info.txt`)) {
-        fs.unlinkSync(`${infoFile}.info.txt`);
-      }
-      fs.writeFileSync(`${infoFile}.info.txt`, infoString);
+      // if (fs.existsSync(`${infoFile}.info.txt`)) {
+      //   fs.unlinkSync(`${infoFile}.info.txt`);
+      // }
+      const searchSpliterBegin = `\n-------Begin Search ID: ${searchId}-------\n`;
+      const searchSpliterEnd = `\n-------End Search ID: ${searchId}-------\n`;
+      fs.appendFileSync(`${infoFile}.info.txt`, searchSpliterBegin);
+      fs.appendFileSync(`${infoFile}.info.txt`, infoString);
       console.log(infoString);
 
       const infoObject: InfoObject = {
@@ -160,6 +165,8 @@ Remaining time: ${remainingTimeFormated}
         remainingTimeFormated,
       };
 
+      meta.searchId = searchId;
+
       if (retriveAllPages) {
         if (chunkSize) {
           returns = await handleAllPagesInChunks(
@@ -173,11 +180,14 @@ Remaining time: ${remainingTimeFormated}
         }
         returns = await handleAllPages(response.data, this.headers, meta, infoFile, infoObject);
       }
-      if (resultsNumber > 0) {
-        returns = await handleMultipleResutls(
+      if (limit > 0) {
+        if (chunkSize) {
+          // returns = await handleMultipleResultsChuncked
+        }
+        returns = await handleMultipleResults(
           response.data,
           this.headers,
-          resultsNumber,
+          limit,
           perPage,
           meta,
           infoFile,
@@ -186,14 +196,19 @@ Remaining time: ${remainingTimeFormated}
       }
 
       // Write response to JSON file if toJson is provided
+      infoString = `\nResults: ${returns.results.length}`;
       if (toJson && !chunkSize) {
         if (response.status === 200) {
+          infoString += `\nOutput file: ${toJson}.json`;
           fs.writeFileSync(
             `${toJson}.json`,
             JSON.stringify(returns, null, 2),
           );
         }
       }
+      console.log(infoString);
+      fs.appendFileSync(`${infoFile}.info.txt`, infoString);
+      fs.appendFileSync(`${infoFile}.info.txt`, searchSpliterEnd);
       return returns;
     } catch (error) {
       const err = error as AxiosError;

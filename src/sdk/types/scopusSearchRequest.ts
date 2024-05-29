@@ -83,7 +83,7 @@ export interface ScopusSearchRequest {
   endPage?: number;
   perPage?: number;
   page?: number;
-  resultsNumber?: number;
+  limit?: number;
   keyType?: 'Developer' | 'Institutional';
   meta: Meta;
 }
@@ -99,6 +99,7 @@ export type Meta = {
     field: string;
     order: 'asc' | 'desc';
   };
+  searchId?: string;
 };
 
 export type InfoObject = {
