@@ -104,7 +104,10 @@ export default class ScopusSDK {
       if (retriveAllPages) {
         totalResults = +response.data['search-results']['opensearch:totalResults'];
       }
-      const itemsPerPage = +response.data['search-results']['opensearch:itemsPerPage'];
+      let itemsPerPage = +response.data['search-results']['opensearch:itemsPerPage'];
+      if (itemsPerPage === 0) {
+        itemsPerPage = perPage;
+      }
       const totalNumberOfApiCallsNeeded = Math.ceil((totalResults / itemsPerPage));
       const endTime = new Date().getTime();
       const timeTaken = (endTime - startTime) / 1000;
@@ -134,7 +137,7 @@ Remaining time: ${remainingTimeFormated}
 \n`;
 
       if (fs.existsSync(`${infoFile}.info.txt`)) {
-        fs.unlinkSync(`${toJson}.info.txt`);
+        fs.unlinkSync(`${infoFile}.info.txt`);
       }
       fs.writeFileSync(`${infoFile}.info.txt`, infoString);
       console.log(infoString);
@@ -181,6 +184,7 @@ Remaining time: ${remainingTimeFormated}
           infoObject,
         );
       }
+
       // Write response to JSON file if toJson is provided
       if (toJson && !chunkSize) {
         if (response.status === 200) {

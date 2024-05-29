@@ -51,6 +51,9 @@ function searchBuilder(query: any) {
   let searchQuery = '';
 
   for (let i = 0; i < query.length; i += 1) {
+    if (typeof query[i] !== 'string') {
+      query[i] = query[i].toString();
+    }
     if (query[i].match(/(\w+)\.\.\./)) {
       const key = query[i].match(/(\w+)\.\.\./)[1];
       // open a file

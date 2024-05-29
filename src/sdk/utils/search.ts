@@ -169,7 +169,7 @@ export async function handleMultipleResutls(
   let next = getNext(links);
   const allData = data;
   let totalResults = perPage;
-  while (resultsNumber > 0) {
+  while (resultsNumber > 0 && next) {
     let infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
     const nextData = await GET(next['@href'], headers, {});
     infoObject.endTime = new Date().getTime();
