@@ -9,6 +9,7 @@ import {
   handleAllPages,
   handleAllPagesInChunks,
   handleMultipleResults,
+  handleMultipleResultsChuncked,
   metadata,
   parseSort,
   urlEncodeQuery,
@@ -99,6 +100,7 @@ export default class ScopusSDK {
 
       checkLength(query, url);
 
+      // TODO: Add info about first chunk
       const response = await GET(url, this.headers, {});
       let returns = metadata(response.data, meta, 'original');
 
@@ -177,26 +179,39 @@ Remaining time: ${remainingTimeFormated}
             meta,
             infoObject,
           );
+        } else {
+          returns = await handleAllPages(response.data, this.headers, meta, infoFile, infoObject);
         }
-        returns = await handleAllPages(response.data, this.headers, meta, infoFile, infoObject);
       }
       if (limit > 0) {
         if (chunkSize) {
-          // returns = await handleMultipleResultsChuncked
+          returns = await handleMultipleResultsChuncked(
+            response.data,
+            this.headers,
+            limit,
+            perPage,
+            meta,
+            infoFile,
+            infoObject,
+            toJson,
+            chunkSize,
+          );
+        } else {
+          returns = await handleMultipleResults(
+            response.data,
+            this.headers,
+            limit,
+            perPage,
+            meta,
+            infoFile,
+            infoObject,
+          );
         }
-        returns = await handleMultipleResults(
-          response.data,
-          this.headers,
-          limit,
-          perPage,
-          meta,
-          infoFile,
-          infoObject,
-        );
       }
 
       // Write response to JSON file if toJson is provided
-      infoString = `\nResults: ${returns.results.length}`;
+      infoString = '';
+      if (!chunkSize) infoString = `\nResults: ${returns.results.length}`;
       if (toJson && !chunkSize) {
         if (response.status === 200) {
           infoString += `\nOutput file: ${toJson}.json`;

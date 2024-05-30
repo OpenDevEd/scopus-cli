@@ -155,6 +155,90 @@ export function metadata(data: ScopusSearchResponse, meta: Meta, sourceFormat: '
   return output;
 }
 
+export function formatNumber(num: number): string {
+  // Pad the number to 7 digits
+  const paddedNum = num.toString().padStart(7, '0');
+
+  // Format the padded number with commas as thousands separators
+  const parts = paddedNum.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  return parts.join('.');
+}
+
+export async function handleMultipleResultsChuncked(
+  data: ScopusSearchResponse,
+  headers: Record<string, string>,
+  limit: number,
+  perPage: number,
+  meta: Meta,
+  infoFile: string,
+  infoObject: InfoObject,
+  toJson: string,
+  chunkSize: number,
+) {
+  const links = data['search-results'].link;
+  let next = getNext(links);
+  const chunk = data;
+  let totalResults = perPage;
+  let start = 0;
+  let end: number;
+  if (chunk['search-results'].entry.length >= chunkSize || !next) {
+    end = start + chunk['search-results'].entry.length;
+    const startFormatted = formatNumber(start + 1);
+    const endFormatted = formatNumber(end);
+    const dataWithMeta = metadata(chunk, meta, 'chunk');
+    chunk['search-results']['opensearch:startIndex'] = start.toString();
+    chunk['search-results']['opensearch:itemsPerPage'] = chunk['search-results'].entry.length.toString();
+    fs.writeFileSync(
+      `${toJson}-${startFormatted}-${endFormatted}.json`,
+      JSON.stringify(dataWithMeta, null, 2),
+    );
+    start = end;
+    chunk['search-results'].entry = [];
+  }
+  while (limit > 0 && next) {
+    let infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
+    const nextData = await GET(next['@href'], headers, {});
+    infoObject.endTime = new Date().getTime();
+    infoObject.timeTaken = (infoObject.endTime - infoObject.startTime) / 1000;
+    infoObject.completionFraction = infoObject.currentApiRequestCallNumber
+      / infoObject.totalNumberOfApiCallsNeeded;
+    infoObject.estimatedTime = infoObject.timeTaken / infoObject.completionFraction;
+    infoObject.remainingTime = infoObject.estimatedTime - infoObject.timeTaken;
+    infoObject.remainingTimeFormated = new Date(infoObject.remainingTime * 1000)
+      .toISOString().slice(11, 19);
+    infoObject.currentApiRequestCallNumber += 1;
+    infoString += `\n- Progress: ${Math.round((infoObject.currentApiRequestCallNumber / infoObject.totalNumberOfApiCallsNeeded) * 100)}%`;
+    infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
+    const remainingQueries = nextData.headers['x-ratelimit-remaining'];
+    infoString += `\n- Remaining Quota: ${remainingQueries}`;
+    chunk['search-results'].entry.push(...nextData.data['search-results'].entry);
+    totalResults += perPage;
+    limit -= perPage;
+    next = getNext(nextData.data['search-results'].link);
+    if (chunk['search-results'].entry.length >= chunkSize || !next) {
+      end = start + chunk['search-results'].entry.length;
+      const startFormatted = formatNumber(start + 1);
+      const endFormatted = formatNumber(end);
+      chunk['search-results']['opensearch:startIndex'] = start.toString();
+      chunk['search-results']['opensearch:itemsPerPage'] = chunk['search-results'].entry.length.toString();
+      const dataWithMeta = metadata(chunk, meta, 'chunk');
+      fs.writeFileSync(
+        `${toJson}-${startFormatted}-${endFormatted}.json`,
+        JSON.stringify(dataWithMeta, null, 2),
+      );
+      start = end;
+      chunk['search-results'].entry = [];
+      infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
+      infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
+    }
+    console.log(infoString);
+    fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
+  }
+  return metadata(data, meta, 'original');
+}
+
 export async function handleMultipleResults(
   data: ScopusSearchResponse,
   headers: Record<string, string>,
@@ -232,17 +316,6 @@ export async function handleAllPages(
   allData['search-results']['opensearch:itemsPerPage'] = allData['search-results']['opensearch:totalResults'];
   const allDataWithMeta = metadata(allData, meta, 'original');
   return allDataWithMeta;
-}
-
-export function formatNumber(num: number): string {
-  // Pad the number to 7 digits
-  const paddedNum = num.toString().padStart(7, '0');
-
-  // Format the padded number with commas as thousands separators
-  const parts = paddedNum.split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-  return parts.join('.');
 }
 
 export async function handleAllPagesInChunks(
