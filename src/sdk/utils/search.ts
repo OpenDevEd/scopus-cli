@@ -187,7 +187,7 @@ export async function handleMultipleResultsChuncked(
   infoString += `\n- Progress: ${infoObject.progress}%`;
   infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
   infoString += `\n- Remaining Quota: ${infoObject.remainingQuota}`;
-  if (chunk['search-results'].entry.length >= chunkSize || !next) {
+  if (chunk['search-results'].entry.length >= chunkSize || !next || limit <= 0) {
     end = start + chunk['search-results'].entry.length;
     const startFormatted = formatNumber(start + 1);
     const endFormatted = formatNumber(end);
@@ -225,7 +225,7 @@ export async function handleMultipleResultsChuncked(
     totalResults += perPage;
     limit -= perPage;
     next = getNext(nextData.data['search-results'].link);
-    if (chunk['search-results'].entry.length >= chunkSize || !next) {
+    if (chunk['search-results'].entry.length >= chunkSize || !next || limit <= 0) {
       end = start + chunk['search-results'].entry.length;
       const startFormatted = formatNumber(start + 1);
       const endFormatted = formatNumber(end);

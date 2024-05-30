@@ -182,7 +182,7 @@ Remaining time: ${remainingTimeFormated}
           returns = await handleAllPages(response.data, this.headers, meta, infoFile, infoObject);
         }
       }
-      if (limit > 0) {
+      if (limit > 0 || chunkSize) {
         if (chunkSize) {
           returns = await handleMultipleResultsChuncked(
             response.data,
@@ -195,7 +195,7 @@ Remaining time: ${remainingTimeFormated}
             toJson,
             chunkSize,
           );
-        } else {
+        } else if (limit > 0) {
           returns = await handleMultipleResults(
             response.data,
             this.headers,
