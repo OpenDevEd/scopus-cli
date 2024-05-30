@@ -41,7 +41,7 @@ yargs(hideBin(process.argv))
         })
         .option('chunkSize', {
           describe:
-            'this option only works with --allpages. It will retrieve the results in chunks of the specified size. E.g. --chunkSize=100 will retrieve 100 results at a time. and save them to files in a folder with same name in --save option,',
+            'This option will retrieve the results in chunks of the specified size. E.g. --chunkSize=100 will retrieve 100 results at a time. and save them to files in a folder with same name in --save option,',
           type: 'number',
         })
         .option('time', {
@@ -113,6 +113,10 @@ yargs(hideBin(process.argv))
     }
     if (argv.config) {
       argv.apiKey = argv.config;
+    }
+    if (argv.chunkSize && !argv.save) {
+      console.log('Please provide --save option with --chunkSize option.');
+      process.exit(1);
     }
     await search(argv);
   })
