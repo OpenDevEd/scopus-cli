@@ -100,7 +100,6 @@ export default class ScopusSDK {
 
       checkLength(query, url);
 
-      // TODO: Add info about first chunk
       const response = await GET(url, this.headers, {});
       let returns = metadata(response.data, meta, 'original');
 

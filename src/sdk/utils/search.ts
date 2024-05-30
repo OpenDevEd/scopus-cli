@@ -183,6 +183,10 @@ export async function handleMultipleResultsChuncked(
   let totalResults = perPage;
   let start = 0;
   let end: number;
+  let infoString = `Retrieving results from ${0} to ${totalResults}`;
+  infoString += `\n- Progress: ${infoObject.progress}%`;
+  infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
+  infoString += `\n- Remaining Quota: ${infoObject.remainingQuota}`;
   if (chunk['search-results'].entry.length >= chunkSize || !next) {
     end = start + chunk['search-results'].entry.length;
     const startFormatted = formatNumber(start + 1);
@@ -196,9 +200,13 @@ export async function handleMultipleResultsChuncked(
     );
     start = end;
     chunk['search-results'].entry = [];
+    infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
+    infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
   }
+  console.log(infoString);
+  fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   while (limit > 0 && next) {
-    let infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
+    infoString = `Retrieving results from ${totalResults} to ${totalResults + perPage}`;
     const nextData = await GET(next['@href'], headers, {});
     infoObject.endTime = new Date().getTime();
     infoObject.timeTaken = (infoObject.endTime - infoObject.startTime) / 1000;
@@ -212,7 +220,7 @@ export async function handleMultipleResultsChuncked(
     infoString += `\n- Progress: ${Math.round((infoObject.currentApiRequestCallNumber / infoObject.totalNumberOfApiCallsNeeded) * 100)}%`;
     infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
     const remainingQueries = nextData.headers['x-ratelimit-remaining'];
-    infoString += `\n- Remaining Quota: ${remainingQueries}`;
+    infoString += `\n- Remaining quota: ${remainingQueries}`;
     chunk['search-results'].entry.push(...nextData.data['search-results'].entry);
     totalResults += perPage;
     limit -= perPage;
@@ -332,6 +340,10 @@ export async function handleAllPagesInChunks(
   let page = 1;
   let start = 0;
   let end: number;
+  let infoString = `Retrieving page ${0}`;
+  infoString += `\n- Progress: ${infoObject.progress}%`;
+  infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
+  infoString += `\n- Remaining quota: ${infoObject.remainingQuota}`;
   if (chunk['search-results'].entry.length >= chunkSize || !next) {
     end = start + chunk['search-results'].entry.length;
     const startFormatted = formatNumber(start + 1);
@@ -345,9 +357,13 @@ export async function handleAllPagesInChunks(
     );
     start = end;
     chunk['search-results'].entry = [];
+    infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
+    infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
   }
+  console.log(infoString);
+  fs.appendFileSync(`${toJson}.info.txt`, `${infoString}\n`);
   while (next) {
-    let infoString = `Retrieving page ${page}`;
+    infoString = `Retrieving page ${page}`;
     page += 1;
     const nextData = await GET(next['@href'], headers, {});
     infoObject.endTime = new Date().getTime();
@@ -362,7 +378,7 @@ export async function handleAllPagesInChunks(
     infoString += `\n- Progress: ${Math.round((infoObject.currentApiRequestCallNumber / infoObject.totalNumberOfApiCallsNeeded) * 100)}%`;
     infoString += `\n- Remaining time: ${infoObject.remainingTimeFormated}`;
     const remainingQueries = nextData.headers['x-ratelimit-remaining'];
-    infoString += `\n- Remaining queries: ${remainingQueries}`;
+    infoString += `\n- Remaining quota: ${remainingQueries}`;
     chunk['search-results'].entry.push(...nextData.data['search-results'].entry);
     next = getNext(nextData.data['search-results'].link);
     if (chunk['search-results'].entry.length >= chunkSize || !next) {
