@@ -82,11 +82,11 @@ export default class ScopusSDK {
         }
       }
       let useCursor = false;
-      if (retriveAllPages) {
-        if (keyType === 'Institutional') {
-          useCursor = true;
-        }
+
+      if (keyType === 'Institutional') {
+        useCursor = true;
       }
+
       const url = `${
         this.baseUrl
       }/search/scopus?query=${encodedQuery}&view=${view}${
