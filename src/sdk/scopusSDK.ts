@@ -63,7 +63,7 @@ export default class ScopusSDK {
       if (!toJson) infoFile = 'info';
       else infoFile = toJson;
 
-      if (keyType === 'Institutional') {
+      if (keyType === 'Institutional' && view !== 'COMPLETE') {
         if (limit < 200) {
           perPage = limit;
           limit = 0;
