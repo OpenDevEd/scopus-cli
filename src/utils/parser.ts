@@ -155,6 +155,14 @@ export default async function search(args: any) {
     },
   };
   if (args.date) {
+    if (args.date.match(/^\d{4}-$/)) {
+      const year = args.date.match(/^(\d{4})-$/)[1];
+      args.date = `${year}-${parseInt(year, 10) + 1000}`;
+    }
+    if (args.date.match(/^-\d{4}$/)) {
+      const year = args.date.match(/-(\d{4})$/)[1];
+      args.date = `${parseInt(year, 10) - 1000}-${year}`;
+    }
     scopusOptions.date = args.date;
   }
   if (args.count) {
