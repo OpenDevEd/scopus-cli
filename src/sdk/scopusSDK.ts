@@ -16,6 +16,7 @@ import {
   validateParameters,
 } from './utils/search';
 import { quotaExceededError } from './utils/utility';
+import { AbstractSearchRequest } from './types/scopusAbstract';
 
 export default class ScopusSDK {
   private apiKey: string;
@@ -30,6 +31,46 @@ export default class ScopusSDK {
     this.headers = {
       'X-ELS-APIKey': this.apiKey,
     };
+  }
+
+  async abstract({ scopusId, view, toJson }: AbstractSearchRequest) {
+    try {
+      let data;
+      if (Array.isArray(scopusId)) {
+        // Handle multiple scopusIds
+        const requests = scopusId.map(async (id) => {
+          const url = `${this.baseUrl}/abstract/scopus_id/${id}?${
+            view ? `view=${view}` : ''
+          }`;
+          const response = await GET(url, this.headers, {});
+          return response.data['abstracts-retrieval-response'];
+        });
+        data = await Promise.all(requests);
+      } else {
+        const url = `${this.baseUrl}/abstract/scopus_id/${scopusId}?${
+          view ? `view=${view}` : ''
+        }`;
+        const response = await GET(url, this.headers, {});
+        data = [response.data['abstracts-retrieval-response']];
+      }
+      if (toJson) {
+        console.log(`Output file: ${toJson}.json`);
+        fs.writeFileSync(
+          `${toJson}.json`,
+          JSON.stringify(data, null, 2),
+        );
+      } else {
+        console.log(data);
+      }
+      return data;
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status === 429) {
+        quotaExceededError(err);
+      }
+      const message = err.response?.headers['x-els-status'];
+      throw new Error(`GET request failed: ${message}`);
+    }
   }
 
   async search({

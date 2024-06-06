@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
-import search from './utils/parser';
+import search from './utils/search';
 import setApiKey from './utils/config';
+import abstract from './utils/abstract';
 
 yargs(hideBin(process.argv))
   .command(
@@ -86,38 +87,63 @@ yargs(hideBin(process.argv))
     'config set api-key',
     'Set the API key to be used for the search',
   )
+  .command(
+    'abstract [scopusIDs...]',
+    'Get abstracts for a list of Scopus IDs',
+    (yargsParam) => {
+      yargsParam
+        .option('save', {
+          describe: 'Save the search results to a json file. E.g. --save=test will save results to test.json',
+          type: 'string',
+        })
+        .option('view', {
+          describe: 'This alias represents the list of elements that will be returned in the response.',
+          choices: ['META', 'META_ABS', 'FULL', 'REF'],
+          default: 'META',
+        });
+    },
+  )
   .middleware(async (argv) => {
     if (argv._[0] === 'config') {
       console.log('Config command');
       await setApiKey();
       process.exit(0);
     }
-    if (!argv.searchQuery) {
-      console.error('Search query is required');
-      process.exit(1);
+    if (argv._[0] === 'search') {
+      if (!argv.searchQuery) {
+        console.error('Search query is required');
+        process.exit(1);
+      }
+      if (!argv.searchQuery && !argv.searchstringfromfile) {
+        console.log('Please provide a search string (positional args) or use --searchstringfromfile=file.txt.');
+        process.exit(1);
+      }
+      if (argv.title && argv.titleAbs) {
+        console.log('Please provide only one search field --title or --title_and_abstract.');
+        process.exit(1);
+      }
+      if (argv.save && argv.time) {
+        argv.time = false;
+      }
+      if (argv.save && argv.autosave) {
+        console.log('Please provide only one of --save or --autosave.');
+        process.exit(1);
+      }
+      if (argv.config) {
+        argv.apiKey = argv.config;
+      }
+      if (argv.chunkSize && !argv.save) {
+        console.log('Please provide --save option with --chunkSize option.');
+        process.exit(1);
+      }
+      await search(argv);
     }
-    if (!argv.searchQuery && !argv.searchstringfromfile) {
-      console.log('Please provide a search string (positional args) or use --searchstringfromfile=file.txt.');
-      process.exit(1);
+    if (argv._[0] === 'abstract') {
+      if (!argv.scopusIDs) {
+        console.error('Scopus IDs are required');
+        process.exit(1);
+      }
+      await abstract(argv);
     }
-    if (argv.title && argv.titleAbs) {
-      console.log('Please provide only one search field --title or --title_and_abstract.');
-      process.exit(1);
-    }
-    if (argv.save && argv.time) {
-      argv.time = false;
-    }
-    if (argv.save && argv.autosave) {
-      console.log('Please provide only one of --save or --autosave.');
-      process.exit(1);
-    }
-    if (argv.config) {
-      argv.apiKey = argv.config;
-    }
-    if (argv.chunkSize && !argv.save) {
-      console.log('Please provide --save option with --chunkSize option.');
-      process.exit(1);
-    }
-    await search(argv);
   })
   .parse();
