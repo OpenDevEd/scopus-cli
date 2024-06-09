@@ -15,6 +15,7 @@ Alternatively, you can use:
 git clone git@github.com:OpenDevEd/scopus-cli.git
 cd scopus-cli
 npm run setup
+scopus-cli --help
 ```
 
 If you do not use `npm link`, you need to use `npm run start --` instead of `scopus-cli` below.
@@ -37,7 +38,7 @@ Search for matches only in the title:
 scopus-cli search --title  climate AND africa AND education
 ```
 
-Search for matches only in the title and abstract
+Search for matches only in the title and abstract and keywords:
 
 ```
 scopus-cli search --title-abs  climate AND africa AND education
@@ -71,20 +72,70 @@ scopus-cli search --title  climate AND africa AND education --autosave
 Expand search terms according to searches stored in text files in `searchterms/`:
 
 ```
-scopus-cli search --title  climate... AND africa... AND education... --showtitle
+scopus-cli search --title  climate... AND africa... AND education...
 ```
 
-Add new api key:
+Setup new api key:
 
 ```
-scopus-cli search --title  climate AND africa AND education --apiKey <API_KEY>
-or
-scopus-cli search --title  climate AND africa AND education --config <API_KEY>
+scopus-cli config set api-key
 ```
 
 Test Key capabilities:
 
 ```
 scopus-cli search --title  climate AND africa AND education --keyinfo
+```
+
+Fetch all results from a search:
+
+```
+scopus-cli search --title  climate AND africa AND education --allpages
+```
+
+Fetch all results from a search and save them in chunks:
+
+```
+scopus-cli search --title  climate AND africa AND education --allpages --save out --chunkSize 1000
+```
+
+Fetch a number of results from a search:
+
+```
+scopus-cli search --title  climate AND africa AND education --limit 100
+```
+
+Fetch results for a specific date range:
+
+- from start to 2020
+```
+scopus-cli search --title  climate AND africa AND education --date -2020
+```
+
+- from 2019 to 2020
+```
+scopus-cli search --title  climate AND africa AND education --date 2019-2020
+```
+
+- from 2019 to now
+```
+scopus-cli search --title  climate AND africa AND education --date 2019-
+```
+
+- only 2020
+```
+scopus-cli search --title  climate AND africa AND education --date 2020
+```
+
+Fetch abstract from a specific scopus id:
+
+```
+scopus-cli abstract <SCOPUS_ID> <SCOPUS_ID> <SCOPUS_ID> ...
+```
+
+Fetch abstract from a specific scopus id and save them in a file:
+
+```
+scopus-cli abstract <SCOPUS_ID> <SCOPUS_ID> <SCOPUS_ID> ... --save output
 ```
 
