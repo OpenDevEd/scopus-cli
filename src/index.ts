@@ -118,6 +118,9 @@ yargs(hideBin(process.argv))
         console.log('Please provide a search string (positional args) or use --searchstringfromfile=file.txt.');
         process.exit(1);
       }
+      if (!argv.title && !argv.titleAbs) {
+        argv.titleAbs = true;
+      }
       if (argv.title && argv.titleAbs) {
         console.log('Please provide only one search field --title or --title_and_abstract.');
         process.exit(1);
