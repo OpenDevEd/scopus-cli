@@ -19,13 +19,18 @@ yargs(hideBin(process.argv))
           describe: 'Fetch all pages of the search results',
           type: 'boolean',
         })
-        .option('title', {
-          describe: 'Search only in title',
-          type: 'boolean',
-        })
-        .option('title-abs', {
-          describe: 'Search only in title and abstract',
-          type: 'boolean',
+        // .option('title', {
+        //   describe: 'Search only in title',
+        //   type: 'boolean',
+        // })
+        // .option('title-abs', {
+        //   describe: 'Search only in title and abstract',
+        //   type: 'boolean',
+        // })
+        .option('field', {
+          describe: 'Search only in the specified field, multiple fields are separated by a comma. E.g. title,abstract or ti,ab. The available fields are: title | ti, abstract | ab, keywords | ke',
+          type: 'string',
+          default: 'title,abstract,keywords',
         })
         .option('view', {
           describe: 'This alias represents the list of elements that will be returned in the response.',
@@ -118,12 +123,24 @@ yargs(hideBin(process.argv))
         console.log('Please provide a search string (positional args) or use --searchstringfromfile=file.txt.');
         process.exit(1);
       }
-      if (!argv.title && !argv.titleAbs) {
-        argv.titleAbs = true;
-      }
-      if (argv.title && argv.titleAbs) {
-        console.log('Please provide only one search field --title or --title_and_abstract.');
-        process.exit(1);
+      // if (!argv.title && !argv.titleAbs) {
+      //   argv.titleAbs = true;
+      // }
+      // if (argv.title && argv.titleAbs) {
+      //   console.log('Please provide only one search field --title or --title_and_abstract.');
+      //   process.exit(1);
+      // }
+      if (typeof argv.field === 'string') {
+        const fields = argv.field.split(',');
+        const validFields = ['title', 'abstract', 'keywords', 'ti', 'ab', 'ke'];
+        for (let i = 0; i < fields.length; i += 1) {
+          fields[i] = fields[i].trim();
+          if (!validFields.includes(fields[i])) {
+            console.log('Invalid field:', fields[i]);
+            process.exit(1);
+          }
+        }
+        argv.field = fields;
       }
       if (argv.save && argv.time) {
         argv.time = false;

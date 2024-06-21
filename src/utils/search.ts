@@ -98,16 +98,22 @@ function searchBuilder(query: any) {
   return searchQuery;
 }
 
-function buildQuery(query: any, title?:boolean, titleAndAbstract?:boolean) {
+function buildQuery(query: any, fields: string[]) {
   let searchQuery = searchBuilder(query);
-  if (title) {
-    if (searchQuery.trim().startsWith('(') && searchQuery.trim().endsWith(')')) {
-      searchQuery = `TITLE${searchQuery}`;
-    } else searchQuery = `TITLE(${searchQuery})`;
+  const searchFields: string[] = [];
+  if (fields.includes('title') || fields.includes('ti')) {
+    searchFields.push('TITLE');
   }
-  if (titleAndAbstract) {
-    searchQuery = `TITLE-ABS-KEY(${searchQuery})`;
+  if (fields.includes('abstract') || fields.includes('ab')) {
+    searchFields.push('ABS');
   }
+  if (fields.includes('keywords') || fields.includes('ke')) {
+    searchFields.push('KEY');
+  }
+  const searchFieldsStr = searchFields.join('-');
+  if (searchQuery.trim().startsWith('(') && searchQuery.trim().endsWith(')')) {
+    searchQuery = `${searchFieldsStr}${searchQuery}`;
+  } else searchQuery = `${searchFieldsStr}(${searchQuery})`;
   console.log('Final query:', searchQuery);
   return searchQuery;
 }
@@ -140,8 +146,9 @@ export default async function search(args: any) {
     query = fs.readFileSync(args.searchstringfromfile, 'utf8');
     query = query.split(/\r?\n/);
   }
+  const queryString = buildQuery(query, args.field);
   const scopusOptions: ScopusSearchRequest = {
-    query: buildQuery(query, args.title, args.titleAbs).trim(),
+    query: queryString.trim(),
     meta: {
       query: '',
       searchTerm: '',
@@ -222,10 +229,9 @@ export default async function search(args: any) {
   scopusOptions.retriveAllPages = !!args.allpages;
 
   const meta: Meta = {
-    query: buildQuery(query, false, false),
+    query: queryString.trim(),
     searchTerm: query.join(' '),
-    // eslint-disable-next-line no-nested-ternary
-    searchScope: args.title ? 'title' : args.titleAbs ? 'title_abstract_keywords' : 'all',
+    searchScope: args.field.join(' '),
     filters: {
       view: args.view || 'STANDARD',
       date: args.date || '',
