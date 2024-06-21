@@ -133,9 +133,11 @@ yargs(hideBin(process.argv))
       }
       if (argv.title) {
         argv.field = 'title';
+        console.warn('\n\nWARNING: The --title option is deprecated, use --field=title instead.\n\n');
       }
       if (argv.titleAbs) {
         argv.field = 'all';
+        console.warn('\n\nWARNING: The --title-abs option is deprecated, use --field=all instead.\n\n');
       }
 
       if (typeof argv.field === 'string') {
