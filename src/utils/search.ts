@@ -129,8 +129,9 @@ async function handleCount(scopusOptions: ScopusSearchRequest) {
   scopusOptions.limit = 1;
   const results = await saveAndSearch(scopusOptions);
   const totalResults: number = parseInt(results.meta.totalResults, 10);
-  console.log('count:', totalResults);
-  return totalResults;
+  const formattedCount = totalResults.toLocaleString();
+  console.log('count:', formattedCount);
+  return formattedCount;
 }
 
 export default async function search(args: any) {
