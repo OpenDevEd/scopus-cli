@@ -101,13 +101,13 @@ function searchBuilder(query: any) {
 function buildQuery(query: any, fields: string[]) {
   let searchQuery = searchBuilder(query);
   const searchFields: string[] = [];
-  if (fields.includes('title') || fields.includes('ti')) {
+  if (fields.includes('title') || fields.includes('ti') || fields.includes('all')) {
     searchFields.push('TITLE');
   }
-  if (fields.includes('abstract') || fields.includes('ab')) {
+  if (fields.includes('abstract') || fields.includes('ab') || fields.includes('all')) {
     searchFields.push('ABS');
   }
-  if (fields.includes('keywords') || fields.includes('ke')) {
+  if (fields.includes('keywords') || fields.includes('ke') || fields.includes('all')) {
     searchFields.push('KEY');
   }
   const searchFieldsStr = searchFields.join('-');

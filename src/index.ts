@@ -132,7 +132,7 @@ yargs(hideBin(process.argv))
       // }
       if (typeof argv.field === 'string') {
         const fields = argv.field.split(',');
-        const validFields = ['title', 'abstract', 'keywords', 'ti', 'ab', 'ke'];
+        const validFields = ['title', 'abstract', 'keywords', 'ti', 'ab', 'ke', 'all'];
         for (let i = 0; i < fields.length; i += 1) {
           fields[i] = fields[i].trim();
           if (!validFields.includes(fields[i])) {
