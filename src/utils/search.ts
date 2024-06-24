@@ -59,7 +59,8 @@ function searchBuilder(query: any) {
       // open a file
       let file = `searchterms/${key}.txt`;
       if (!fs.existsSync(file)) {
-        file = `${os.homedir()}/.config/scopus-cli/searchterms/${key}.txt`;
+        file = `${os.homedir()}/.config/evidence-cli/searchterms/${key}.txt`;
+        if (!fs.existsSync(file)) file = `${os.homedir()}/.config/scopus-cli/searchterms/${key}.txt`;
       }
       let result = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : key;
       // split result into an array by new line
