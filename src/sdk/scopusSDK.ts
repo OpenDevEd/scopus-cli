@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import readline from 'readline';
 import GET from './utils/get';
 import { ReturnWithMeta } from './types/scopusSearchResponse';
 import { InfoObject, ScopusSearchRequest } from './types/scopusSearchRequest';
@@ -187,6 +188,8 @@ Remaining time: ${remainingTimeFormated}
       const searchSpliterEnd = `\n-------End Search ID: ${searchId}-------\n`;
       fs.appendFileSync(`${infoFile}.info.txt`, searchSpliterBegin);
       fs.appendFileSync(`${infoFile}.info.txt`, infoString);
+      readline.cursorTo(process.stdout, 0, 0);
+      readline.clearScreenDown(process.stdout);
       console.log(infoString);
 
       const infoObject: InfoObject = {
@@ -261,6 +264,8 @@ Remaining time: ${remainingTimeFormated}
           );
         }
       }
+      readline.cursorTo(process.stdout, 0, 0);
+      readline.clearScreenDown(process.stdout);
       console.log(infoString);
       fs.appendFileSync(`${infoFile}.info.txt`, infoString);
       fs.appendFileSync(`${infoFile}.info.txt`, searchSpliterEnd);

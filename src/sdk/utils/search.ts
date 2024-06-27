@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { AxiosError } from 'axios';
+import readline from 'readline';
 import {
   Facet, Field, InfoObject, Meta, Sorting, Subj,
 } from '../types/scopusSearchRequest';
@@ -203,6 +204,8 @@ export async function handleMultipleResultsChuncked(
     infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
     infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
   }
+  readline.cursorTo(process.stdout, 0, 0);
+  readline.clearScreenDown(process.stdout);
   console.log(infoString);
   fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   while (limit > 0 && next) {
@@ -241,6 +244,8 @@ export async function handleMultipleResultsChuncked(
       infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
       infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
     }
+    readline.cursorTo(process.stdout, 0, 0);
+    readline.clearScreenDown(process.stdout);
     console.log(infoString);
     fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   }
@@ -280,6 +285,8 @@ export async function handleMultipleResults(
     totalResults += perPage;
     limit -= perPage;
     next = getNext(nextData.data['search-results'].link);
+    readline.cursorTo(process.stdout, 0, 0);
+    readline.clearScreenDown(process.stdout);
     console.log(infoString);
     fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   }
@@ -318,6 +325,8 @@ export async function handleAllPages(
     infoString += `\n- Remaining queries: ${remainingQueries}`;
     allData['search-results'].entry.push(...nextData.data['search-results'].entry);
     next = getNext(nextData.data['search-results'].link);
+    readline.cursorTo(process.stdout, 0, 0);
+    readline.clearScreenDown(process.stdout);
     console.log(infoString);
     fs.appendFileSync(`${infoFile}.info.txt`, `${infoString}\n`);
   }
@@ -360,6 +369,8 @@ export async function handleAllPagesInChunks(
     infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
     infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
   }
+  readline.cursorTo(process.stdout, 0, 0);
+  readline.clearScreenDown(process.stdout);
   console.log(infoString);
   fs.appendFileSync(`${toJson}.info.txt`, `${infoString}\n`);
   while (next) {
@@ -397,6 +408,8 @@ export async function handleAllPagesInChunks(
       infoString += `\n- Results: ${chunk['search-results']['opensearch:itemsPerPage']}`;
       infoString += `\n- Output file: ${toJson}-${startFormatted}-${endFormatted}.json`;
     }
+    readline.cursorTo(process.stdout, 0, 0);
+    readline.clearScreenDown(process.stdout);
     console.log(infoString);
     fs.appendFileSync(`${toJson}.info.txt`, `${infoString}\n`);
   }
